@@ -3,6 +3,7 @@
 
 .db
 .db/
+credentials.json
 
 ### Flask ###
 instance/*
