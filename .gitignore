@@ -401,6 +401,47 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
+
 # End of https://www.toptal.com/developers/gitignore/api/windows,pycharm,python,flask
 .env
 .todo
+
+# ==========================================
+# ALMANAC PROJECT - ADDITIONAL PROTECTION
+# ==========================================
+
+# Environment variables and secret keys
+.env
+.env.*
+!.env.example
+
+
+# Python virtual environments
+.venv/
+venv/
+env/
+
+# PyCharm project settings
+.idea/
+
+# Local database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Python cache files
+__pycache__/
+*.pyc
+
+# Local secrets and credentials
+secrets.json
+credentials.json
+service-account*.json
+
+# Temporary files
+*.tmp
+*.bak
+
+# Local configuration overrides
+config.local.py
+settings.local.py
