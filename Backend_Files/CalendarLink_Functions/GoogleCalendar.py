@@ -10,7 +10,6 @@ from googleapiclient.errors import HttpError
 # If modifying these scopes, delete the file token.json.
 SCOPES = ["https://www.googleapis.com/auth/calendar.readonly"]
 
-
 def authenticateUserCredentials():
     try:
         creds = None
@@ -37,7 +36,9 @@ def authenticateUserCredentials():
 
 def PrintNext10Events():
 
+    # Authenticate User Start ↓↓↓
     creds  = authenticateUserCredentials()
+    # Authenticate User End ↑↑↑
 
     try:
         service = build("calendar", "v3", credentials=creds)
@@ -72,9 +73,50 @@ def PrintNext10Events():
     except:
         print("Another error occurred")
 
+def getAllEventsInADay(Date):
+    # Authenticate User Start ↓↓↓
+    creds = authenticateUserCredentials()
+    # Authenticate User End ↑↑↑
+
+    try:
+        service = build("calendar", "v3", credentials=creds)
+
+        # Call the Calendar API
+        StartDate = Date
+        EndDate = (StartDate + datetime.timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
+        print("Getting all events on a specified date")
+        events_result = (
+            service.events()
+            .list(
+                calendarId="primary",
+                timeMin=StartDate.isoformat(),
+                timeMax =EndDate.isoformat(),
+                singleEvents=True,
+                orderBy="startTime",
+            )
+            .execute()
+        )
+        events = events_result.get("items", [])
+
+        if not events:
+            print("No upcoming events found.")
+            return
+
+        # Prints the start and name of the next 10 events
+        for event in events:
+            start = event["start"].get("dateTime", event["start"].get("date"))
+            print(start, event["summary"])
+
+    except HttpError as error:
+        print(f"An error occurred: {error}")
+    # except:
+    #     print("Another error occurred")
+
 
 def main():
-    PrintNext10Events()
+    #PrintNext10Events()
+    Today = datetime.datetime.now(tz=datetime.timezone.utc)
+    getAllEventsInADay(Today)
 
 
 if __name__ == "__main__":
