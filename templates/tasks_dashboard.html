@@ -1,0 +1,1321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Student Scheduler | AI Timetable & Task Assistant</title>
+  
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <!-- FullCalendar CSS & JS -->
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+
+  <style>
+    :root {
+      --primary-accent: #4f46e5;
+      --primary-hover: #4338ca;
+      --bg-soft: #f8fafc;
+      --card-bg: #ffffff;
+      --border-color: #e2e8f0;
+      --text-muted: #64748b;
+    }
+
+    body {
+      background-color: var(--bg-soft);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: #1e293b;
+      min-height: 100vh;
+    }
+
+    .navbar-brand-badge {
+      background: linear-gradient(135deg, #4f46e5, #7c3aed);
+      color: white;
+      padding: 0.35rem 0.75rem;
+      border-radius: 8px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .card {
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+      background-color: var(--card-bg);
+    }
+
+    .card-header {
+      background-color: #ffffff;
+      border-bottom: 1px solid var(--border-color);
+      font-weight: 600;
+      padding: 0.85rem 1.25rem;
+      border-top-left-radius: 12px !important;
+      border-top-right-radius: 12px !important;
+    }
+
+    .nav-pills .nav-link {
+      color: var(--text-muted);
+      font-weight: 500;
+      border-radius: 8px;
+      padding: 0.45rem 0.9rem;
+      font-size: 0.9rem;
+    }
+
+    .nav-pills .nav-link.active {
+      background-color: var(--primary-accent);
+      color: #fff;
+    }
+
+    .priority-badge-high {
+      background-color: #fee2e2;
+      color: #b91c1c;
+      border: 1px solid #fca5a5;
+    }
+
+    .priority-badge-medium {
+      background-color: #fef3c7;
+      color: #b45309;
+      border: 1px solid #fcd34d;
+    }
+
+    .priority-badge-low {
+      background-color: #dcfce7;
+      color: #15803d;
+      border: 1px solid #86efac;
+    }
+
+    .chip-btn {
+      border: 1px solid var(--border-color);
+      background: #f1f5f9;
+      border-radius: 16px;
+      padding: 0.2rem 0.65rem;
+      font-size: 0.78rem;
+      color: #334155;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .chip-btn:hover {
+      background: #e2e8f0;
+      color: #0f172a;
+    }
+
+    #calendar {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 1rem;
+      min-height: 680px;
+    }
+
+    .fc-theme-standard td, .fc-theme-standard th {
+      border-color: #f1f5f9;
+    }
+
+    .fc-event {
+      cursor: pointer;
+      border-radius: 6px !important;
+      padding: 2px 4px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      border: none !important;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+    }
+
+    .pulse-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 6px;
+    }
+    .pulse-dot-green { background-color: #10b981; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2); }
+    .pulse-dot-amber { background-color: #f59e0b; box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25); }
+    .pulse-dot-red { background-color: #ef4444; box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.3); animation: pulse 1.5s infinite; }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+      70% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
+
+    .task-item {
+      border-left: 4px solid var(--primary-accent);
+      background: #ffffff;
+      border-radius: 8px;
+      transition: transform 0.1s ease;
+    }
+    .task-item:hover {
+      transform: translateX(2px);
+    }
+
+    .coach-bubble {
+      background: linear-gradient(145deg, #eef2ff, #f5f3ff);
+      border: 1px solid #c7d2fe;
+      border-radius: 12px;
+      padding: 1rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top py-2 px-3 shadow-sm">
+    <div class="container-fluid">
+      <div class="d-flex align-items-center gap-2">
+        <span class="navbar-brand-badge"><i class="bi bi-calendar2-check-fill me-1"></i> StudySync</span>
+        <div>
+          <span class="fw-bold fs-6 d-block lh-1">Smart Student Scheduler</span>
+          <small class="text-muted" style="font-size: 0.72rem;">Code does the maths, AI does the judgment</small>
+        </div>
+      </div>
+
+      <!-- Quick Metrics & Status -->
+      <div class="d-flex align-items-center gap-3 ms-auto">
+        <div class="d-none d-md-flex align-items-center gap-2 border rounded-pill px-3 py-1 bg-light">
+          <span id="riskPulse" class="pulse-dot pulse-dot-green"></span>
+          <span id="riskLabel" class="fw-semibold text-secondary" style="font-size: 0.82rem;">Schedule: Optimal</span>
+        </div>
+
+        <div class="d-none d-lg-flex gap-3 text-secondary" style="font-size: 0.82rem;">
+          <div><i class="bi bi-list-task me-1"></i><span id="metricTaskCount" class="fw-bold text-dark">0</span> Tasks</div>
+          <div><i class="bi bi-clock-history me-1"></i><span id="metricStudyHours" class="fw-bold text-dark">0</span>h Planned</div>
+        </div>
+
+        <!-- Google Calendar Sync Group -->
+        <div class="d-flex align-items-center gap-1 border-start ps-2 ms-1">
+          <div id="googleStatusContainer" class="d-inline-block">
+            <!-- Dynamically populated: Connect button or Connected dropdown -->
+            <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#googleModal" id="btnGoogleConnect">
+              <i class="bi bi-google me-1"></i> Connect Google Cal
+            </button>
+          </div>
+
+          <button class="btn btn-outline-primary btn-sm" id="btnSyncGoogle" title="Sync availability and check for clashes with Google Calendar">
+            <span id="syncSpinner" class="spinner-border spinner-border-sm me-1 d-none" role="status"></span>
+            <i class="bi bi-arrow-repeat me-1"></i> Sync
+          </button>
+
+          <button class="btn btn-outline-dark btn-sm" id="btnPushGoogle" title="Write confirmed study blocks to Google Calendar">
+            <span id="pushSpinner" class="spinner-border spinner-border-sm me-1 d-none" role="status"></span>
+            <i class="bi bi-cloud-arrow-up-fill me-1"></i> Push
+          </button>
+
+          <button class="btn btn-warning btn-sm fw-medium text-dark" id="btnSimulateClash" title="Simulate a new Google event clashing with a study block to demonstrate intelligent displacement">
+            <i class="bi bi-lightning-charge-fill me-1"></i> Test Clash
+          </button>
+        </div>
+
+        <!-- Action Buttons -->
+        <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#settingsModal">
+          <i class="bi bi-key-fill me-1"></i> Gemini Key
+        </button>
+
+        <a href="/api/calendar/export-ics" class="btn btn-outline-primary btn-sm" id="btnExportCal">
+          <i class="bi bi-download me-1"></i> Export .ics
+        </a>
+
+        <button class="btn btn-primary btn-sm px-3 fw-medium" id="btnRunSchedule">
+          <i class="bi bi-magic me-1"></i> Schedule with AI
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Google Conflict Resolution Toast/Banner (Stable Re-planning with Undo) -->
+  <div id="conflictAlertBanner" class="alert alert-warning mb-0 rounded-0 border-0 py-2 px-4 d-none d-flex align-items-center justify-content-between shadow-sm" role="alert">
+    <div>
+      <i class="bi bi-arrow-left-right me-2 fs-5 text-dark"></i>
+      <strong id="conflictAlertTitle">Google Calendar Clash Resolved:</strong> <span id="conflictAlertBody" class="ms-1"></span>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <button class="btn btn-sm btn-dark fw-semibold" id="btnUndoConflict">
+        <i class="bi bi-arrow-counterclockwise me-1"></i> Undo
+      </button>
+      <button type="button" class="btn-close" onclick="document.getElementById('conflictAlertBanner').classList.add('d-none')"></button>
+    </div>
+  </div>
+
+  <!-- Deadline Risk Banner (Conditional) -->
+  <div id="riskBanner" class="alert alert-danger mb-0 rounded-0 border-0 py-2 px-4 d-none d-flex align-items-center justify-content-between" role="alert">
+    <div>
+      <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+      <strong>Deadline-Risk Warning:</strong> <span id="riskBannerText">Heavy workload detected before upcoming deadlines!</span>
+    </div>
+    <button class="btn btn-sm btn-dark" onclick="switchTab('pills-coach')">View AI Advice</button>
+  </div>
+
+  <!-- Main Content Layout -->
+  <div class="container-fluid py-3 px-3">
+    <div class="row g-3">
+
+      <!-- LEFT COLUMN: Task & Commitment Inputs (Tabs) -->
+      <div class="col-12 col-xl-4 col-lg-5">
+        <div class="card h-100">
+          <div class="card-header d-flex justify-content-between align-items-center py-2">
+            <ul class="nav nav-pills card-header-pills" id="inputTabs" role="tablist">
+              <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="pills-form-tab" data-bs-toggle="pill" data-bs-target="#pills-form" type="button" role="tab">
+                  <i class="bi bi-sliders me-1"></i> Structured
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="pills-nlp-tab" data-bs-toggle="pill" data-bs-target="#pills-nlp" type="button" role="tab">
+                  <i class="bi bi-stars me-1"></i> AI Prompt
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="pills-modules-tab" data-bs-toggle="pill" data-bs-target="#pills-modules" type="button" role="tab">
+                  <i class="bi bi-journal-bookmark me-1"></i> Modules
+                </button>
+              </li>
+            </ul>
+            <button class="btn btn-light btn-sm p-1" data-bs-toggle="collapse" data-bs-target="#commitmentsCollapse" title="Toggle Fixed Commitments">
+              <i class="bi bi-calendar-event"></i>
+            </button>
+          </div>
+
+          <div class="card-body">
+            <div class="tab-content" id="inputTabContent">
+
+              <!-- TAB 1: Structured Task Input -->
+              <div class="tab-pane fade show active" id="pills-form" role="tabpanel">
+                <form id="formAddTask">
+                  <div class="mb-3">
+                    <label class="form-label small fw-semibold text-secondary">Task Title *</label>
+                    <input type="text" id="taskTitle" class="form-control form-control-sm" placeholder="e.g. Draft Statistics Literature Review" required>
+                  </div>
+
+                  <div class="row g-2 mb-3">
+                    <div class="col-7">
+                      <label class="form-label small fw-semibold text-secondary">Module *</label>
+                      <select id="taskModule" class="form-select form-select-sm" required>
+                        <option value="" disabled selected>Select Module...</option>
+                      </select>
+                    </div>
+                    <div class="col-5">
+                      <label class="form-label small fw-semibold text-secondary">Priority *</label>
+                      <select id="taskPriority" class="form-select form-select-sm">
+                        <option value="high">🔴 High</option>
+                        <option value="medium" selected>🟡 Medium</option>
+                        <option value="low">🟢 Low</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="row g-2 mb-3">
+                    <div class="col-7">
+                      <label class="form-label small fw-semibold text-secondary">Deadline *</label>
+                      <input type="datetime-local" id="taskDeadline" class="form-control form-control-sm" required>
+                    </div>
+                    <div class="col-5">
+                      <label class="form-label small fw-semibold text-secondary">Estimated Hours *</label>
+                      <input type="number" id="taskHours" class="form-control form-control-sm" min="0.5" max="40" step="0.5" value="2.0" required>
+                    </div>
+                  </div>
+
+                  <!-- Quick Hour Chips -->
+                  <div class="mb-3 d-flex gap-1 flex-wrap align-items-center">
+                    <span class="text-muted" style="font-size: 0.75rem;">Presets:</span>
+                    <button type="button" class="chip-btn" onclick="setTaskHours(1.0)">1 hr</button>
+                    <button type="button" class="chip-btn" onclick="setTaskHours(1.5)">1.5 hr</button>
+                    <button type="button" class="chip-btn" onclick="setTaskHours(2.0)">2 hrs</button>
+                    <button type="button" class="chip-btn" onclick="setTaskHours(3.0)">3 hrs</button>
+                    <button type="button" class="chip-btn" onclick="setTaskHours(4.0)">4 hrs</button>
+                  </div>
+
+                  <div class="mb-3">
+                    <label class="form-label small fw-semibold text-secondary">Notes / Instructions (optional)</label>
+                    <textarea id="taskNotes" class="form-control form-control-sm" rows="2" placeholder="e.g. Include 5 primary sources and check rubric"></textarea>
+                  </div>
+
+                  <button type="submit" class="btn btn-primary btn-sm w-100 fw-semibold py-2">
+                    <i class="bi bi-plus-circle me-1"></i> Add Task to Timetable
+                  </button>
+                </form>
+              </div>
+
+              <!-- TAB 2: Natural Language Input (Gemini NLP) -->
+              <div class="tab-pane fade" id="pills-nlp" role="tabpanel">
+                <div class="mb-2">
+                  <label class="form-label small fw-semibold text-secondary">Enter in Natural Language</label>
+                  <textarea id="nlpInputText" class="form-control form-control-sm" rows="3" placeholder="e.g., 'Finish CS101 assignment for 3 hours before Friday 5pm, high priority' or 'Gym tomorrow from 5pm to 6pm'"></textarea>
+                </div>
+
+                <!-- Example Chips -->
+                <div class="mb-3">
+                  <span class="text-muted d-block mb-1" style="font-size: 0.75rem;">Try an example:</span>
+                  <div class="d-flex flex-column gap-1">
+                    <button type="button" class="chip-btn text-start" onclick="setNlpText('CS101 Systems essay due this Friday at 5pm, 3.5 hours, high priority')">
+                      💡 "CS101 Systems essay due this Friday at 5pm, 3.5 hours, high priority"
+                    </button>
+                    <button type="button" class="chip-btn text-start" onclick="setNlpText('MATH201 Linear Algebra problem set 2 hours due tomorrow at 8pm')">
+                      💡 "MATH201 Linear Algebra problem set 2 hours due tomorrow at 8pm"
+                    </button>
+                    <button type="button" class="chip-btn text-start" onclick="setNlpText('AI305 Machine Learning project revision 4 hours due Sunday midnight')">
+                      💡 "AI305 Machine Learning project revision 4 hours due Sunday midnight"
+                    </button>
+                  </div>
+                </div>
+
+                <button class="btn btn-dark btn-sm w-100 mb-3 fw-semibold py-2" id="btnParseNlp">
+                  <span id="nlpSpinner" class="spinner-border spinner-border-sm me-1 d-none" role="status"></span>
+                  <i class="bi bi-stars me-1 text-warning"></i> Parse with Gemini AI
+                </button>
+
+                <!-- Parsed Review Preview Card -->
+                <div id="nlpPreviewCard" class="card p-3 bg-light border-primary d-none">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="badge bg-primary">Parsed by Gemini</span>
+                    <small class="text-muted" id="nlpSourceTag"></small>
+                  </div>
+                  <h6 class="fw-bold mb-1" id="prevTitle"></h6>
+                  <div class="small text-muted mb-2">
+                    <span id="prevModule" class="badge bg-secondary me-1"></span>
+                    <span id="prevPriority" class="badge bg-warning text-dark me-1"></span>
+                    <span id="prevHours" class="badge bg-info text-dark me-1"></span>
+                  </div>
+                  <div class="small mb-3">
+                    <strong>Deadline / Time:</strong> <span id="prevDeadline"></span>
+                  </div>
+                  <div class="d-flex gap-2">
+                    <button class="btn btn-outline-secondary btn-sm flex-fill" onclick="hideNlpPreview()">Cancel</button>
+                    <button class="btn btn-success btn-sm flex-fill fw-semibold" id="btnConfirmNlpAdd">Confirm & Add</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- TAB 3: Student Module Manager -->
+              <div class="tab-pane fade" id="pills-modules" role="tabpanel">
+                <h6 class="fw-bold small mb-2 text-secondary">My University Modules</h6>
+                <div id="modulesList" class="mb-3 d-flex flex-column gap-2">
+                  <!-- Injected dynamically -->
+                </div>
+
+                <hr class="my-2">
+                <form id="formAddModule">
+                  <h6 class="fw-bold small mb-2 text-secondary">Add New Module</h6>
+                  <div class="row g-2 mb-2">
+                    <div class="col-4">
+                      <input type="text" id="newModCode" class="form-control form-control-sm" placeholder="Code (e.g. CS101)" required>
+                    </div>
+                    <div class="col-8">
+                      <input type="text" id="newModName" class="form-control form-control-sm" placeholder="Module Title" required>
+                    </div>
+                  </div>
+                  <div class="row g-2 mb-2">
+                    <div class="col-6">
+                      <label class="form-label small mb-0 text-muted">Badge Color</label>
+                      <input type="color" id="newModColor" class="form-control form-control-color form-control-sm w-100" value="#4f46e5">
+                    </div>
+                    <div class="col-6">
+                      <label class="form-label small mb-0 text-muted">Target Hrs/Wk</label>
+                      <input type="number" id="newModTarget" class="form-control form-control-sm" value="4.0" step="0.5" min="1">
+                    </div>
+                  </div>
+                  <button type="submit" class="btn btn-outline-primary btn-sm w-100">
+                    <i class="bi bi-folder-plus me-1"></i> Save Module
+                  </button>
+                </form>
+              </div>
+
+            </div>
+
+            <!-- Collapsible Fixed Commitments Section (Lectures / Gym / Work) -->
+            <div class="collapse mt-3 border-top pt-3" id="commitmentsCollapse">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="fw-bold small mb-0 text-secondary"><i class="bi bi-lock-fill me-1"></i> Fixed Commitments (Classes/Shifts)</h6>
+                <button class="btn btn-sm btn-link p-0 text-decoration-none" data-bs-toggle="modal" data-bs-target="#addCommitmentModal">+ Add</button>
+              </div>
+              <div id="commitmentsList" class="small d-flex flex-column gap-1" style="max-height: 140px; overflow-y: auto;">
+                <!-- Injected dynamically -->
+              </div>
+            </div>
+
+            <!-- Pending Tasks List in Left Column -->
+            <div class="mt-3 border-top pt-3">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="fw-bold small mb-0 text-secondary"><i class="bi bi-card-checklist me-1"></i> Active Tasks (<span id="activeTaskCount">0</span>)</h6>
+                <small class="text-muted">Sorted by deadline</small>
+              </div>
+              <div id="tasksList" class="d-flex flex-column gap-2" style="max-height: 220px; overflow-y: auto;">
+                <!-- Injected dynamically -->
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- CENTER COLUMN: Interactive FullCalendar.js Timetable -->
+      <div class="col-12 col-xl-5 col-lg-7">
+        <div class="card h-100">
+          <div class="card-header d-flex justify-content-between align-items-center py-2">
+            <span class="fw-bold small text-secondary"><i class="bi bi-calendar3 me-1"></i> Weekly Study Timetable</span>
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge bg-secondary" style="font-size: 0.72rem;">Fixed Commitments</span>
+              <span class="badge bg-primary" style="font-size: 0.72rem;">AI Study Slots</span>
+            </div>
+          </div>
+          <div class="card-body p-2">
+            <div id="calendar"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN: Gemini AI Study Coach & Feedback Loop -->
+      <div class="col-12 col-xl-3 col-lg-12">
+        <div class="card h-100">
+          <div class="card-header py-2 d-flex justify-content-between align-items-center">
+            <span class="fw-bold small text-secondary">
+              <i class="bi bi-robot me-1 text-primary"></i> Gemini AI Study Coach
+            </span>
+            <span class="badge bg-light text-dark border">Real-time</span>
+          </div>
+
+          <div class="card-body d-flex flex-column gap-3">
+
+            <!-- Coach Advice Bubble -->
+            <div class="coach-bubble">
+              <div class="d-flex align-items-center gap-2 mb-2">
+                <div class="bg-primary text-white rounded-circle p-1 d-flex align-items-center justify-content-center" style="width: 28px; height: 28px;">
+                  <i class="bi bi-chat-quote-fill" style="font-size: 0.85rem;"></i>
+                </div>
+                <strong style="font-size: 0.85rem;" id="coachStatusTitle">Timetable Evaluation</strong>
+              </div>
+              <p class="small mb-0 text-secondary" id="coachMessage">
+                Welcome to your smart scheduler. Add your tasks and click "Schedule with AI" to generate conflict-free study sessions with clear decision rationales!
+              </p>
+            </div>
+
+            <!-- Actionable Recommendations List -->
+            <div>
+              <h6 class="fw-bold small text-secondary mb-2"><i class="bi bi-lightbulb-fill text-warning me-1"></i> Smart Recommendations</h6>
+              <ul class="list-unstyled small mb-0 d-flex flex-column gap-2" id="recommendationsList">
+                <li class="p-2 border rounded bg-white text-muted">No warnings. All scheduled sessions fit comfortably before deadlines.</li>
+              </ul>
+            </div>
+
+            <!-- Interactive Feedback Loop (User speaks back to Gemini) -->
+            <div class="mt-auto border-top pt-3">
+              <label class="form-label small fw-semibold text-secondary">
+                <i class="bi bi-arrow-repeat me-1 text-primary"></i> Ask for Feedback & Update Plan
+              </label>
+              <textarea id="feedbackInput" class="form-control form-control-sm mb-2" rows="2" placeholder="e.g. 'I feel overwhelmed on Wednesday' or 'Shift study blocks to mornings'"></textarea>
+              <button class="btn btn-outline-primary btn-sm w-100 fw-semibold" id="btnSubmitFeedback">
+                <span id="feedbackSpinner" class="spinner-border spinner-border-sm me-1 d-none" role="status"></span>
+                <i class="bi bi-send-fill me-1"></i> Adapt Schedule with Gemini
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL: Block Rationale Details ("Why this slot?") -->
+  <div class="modal fade" id="blockModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold" id="blockModalTitle">Study Session Details</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <span id="blockModalModule" class="badge me-1"></span>
+            <span id="blockModalDuration" class="badge bg-light text-dark border"></span>
+          </div>
+          <div class="p-3 bg-light rounded-3 mb-3 border">
+            <div class="text-muted small fw-bold mb-1"><i class="bi bi-stars text-warning me-1"></i> AI Decision Rationale:</div>
+            <p class="mb-0 fs-6 text-dark fw-medium" id="blockModalReason"></p>
+          </div>
+          <div class="small text-muted">
+            <div><i class="bi bi-clock me-1"></i> <strong>Start:</strong> <span id="blockModalStart"></span></div>
+            <div><i class="bi bi-clock-history me-1"></i> <strong>End:</strong> <span id="blockModalEnd"></span></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Add Fixed Commitment -->
+  <div class="modal fade" id="addCommitmentModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold">Add Fixed Calendar Commitment</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <form id="formAddCommitment">
+          <div class="modal-body">
+            <div class="mb-3">
+              <label class="form-label small fw-semibold">Event Name *</label>
+              <input type="text" id="commTitle" class="form-control" placeholder="e.g. CS101 Lecture, Part-time Shift, Gym" required>
+            </div>
+            <div class="row g-2 mb-3">
+              <div class="col-6">
+                <label class="form-label small fw-semibold">Start Time *</label>
+                <input type="datetime-local" id="commStart" class="form-control" required>
+              </div>
+              <div class="col-6">
+                <label class="form-label small fw-semibold">End Time *</label>
+                <input type="datetime-local" id="commEnd" class="form-control" required>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary btn-sm">Save Commitment</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Gemini API Key Settings -->
+  <div class="modal fade" id="settingsModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold"><i class="bi bi-gear-fill me-1"></i> Gemini API Settings</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <form id="formSaveApiKey">
+          <div class="modal-body">
+            <p class="small text-muted mb-3">
+              Enter your Google Gemini API key to enable live NLP prompt understanding and reasoning. If left unset, the system uses intelligent built-in heuristic scheduling.
+            </p>
+            <div class="mb-3">
+              <label class="form-label small fw-semibold">Gemini API Key</label>
+              <input type="password" id="inputApiKey" class="form-control" placeholder="AIzaSy...">
+            </div>
+            <div id="apiKeyStatus" class="small"></div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary btn-sm">Save Key</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Google Calendar Integration -->
+  <div class="modal fade" id="googleModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold"><i class="bi bi-google text-danger me-2"></i> Google Calendar Integration</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div id="googleModalConnectedState" class="d-none">
+            <div class="p-3 bg-light rounded border mb-3">
+              <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="pulse-dot pulse-dot-green"></span>
+                <strong class="text-success">Connected to Google Calendar</strong>
+              </div>
+              <div class="small text-muted mb-2">Account: <span id="googleModalEmail" class="fw-semibold text-dark"></span></div>
+              <div class="small text-muted">
+                ✅ Privacy-first freebusy sync active<br>
+                ✅ Real-time conflict re-planning enabled<br>
+                ✅ Direct event creation ready
+              </div>
+            </div>
+            <button class="btn btn-outline-danger btn-sm w-100" id="btnDisconnectGoogle">
+              <i class="bi bi-box-arrow-right me-1"></i> Disconnect Account
+            </button>
+          </div>
+
+          <div id="googleModalDisconnectedState">
+            <p class="small text-muted mb-3">
+              Connect your university or personal Google Calendar. The app reads your busy times via Google's privacy-preserving <code>freebusy</code> API (without reading event titles) to schedule your tasks safely around real life.
+            </p>
+
+            <a href="/auth/google" class="btn btn-dark w-100 mb-3 fw-semibold py-2">
+              <i class="bi bi-google text-danger me-2"></i> Sign in with Google
+            </a>
+
+            <div class="p-3 bg-light rounded border">
+              <h6 class="small fw-bold text-secondary mb-1">💡 Hackathon Ready (No Setup Needed):</h6>
+              <p class="small text-muted mb-0">
+                You can immediately test conflict detection, stable task displacement, and two-way sync using the <strong>Test Clash</strong> and <strong>Sync</strong> buttons in the navbar even without Google Cloud OAuth credentials!
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap 5 Bundle JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Application Logic -->
+  <script>
+    let calendar;
+    let cachedModules = [];
+    let pendingNlpData = null;
+
+    document.addEventListener("DOMContentLoaded", () => {
+      initCalendar();
+      initDefaultDates();
+      loadModules();
+      loadTasks();
+      loadCommitments();
+      loadEvents();
+      checkGoogleStatus();
+      bindEvents();
+    });
+
+    function initCalendar() {
+      const calendarEl = document.getElementById("calendar");
+      calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: "timeGridWeek",
+        firstDay: 1, // Monday
+        slotMinTime: "08:00:00",
+        slotMaxTime: "22:00:00",
+        allDaySlot: false,
+        height: "auto",
+        headerToolbar: {
+          left: "prev,next today",
+          center: "title",
+          right: "timeGridWeek,timeGridDay"
+        },
+        eventClick: (info) => {
+          showBlockDetails(info.event);
+        }
+      });
+      calendar.render();
+    }
+
+    function initDefaultDates() {
+      const now = new Date();
+      // Default task deadline: 3 days from now at 17:00
+      const defaultDl = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
+      defaultDl.setHours(17, 0, 0, 0);
+      document.getElementById("taskDeadline").value = formatForDateTimeLocal(defaultDl);
+
+      // Default commitment start/end: tomorrow 10am-12pm
+      const tmrw = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+      tmrw.setHours(10, 0, 0, 0);
+      const tmrwEnd = new Date(tmrw.getTime() + 2 * 60 * 60 * 1000);
+      document.getElementById("commStart").value = formatForDateTimeLocal(tmrw);
+      document.getElementById("commEnd").value = formatForDateTimeLocal(tmrwEnd);
+    }
+
+    function formatForDateTimeLocal(d) {
+      const pad = (n) => String(n).padStart(2, "0");
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
+    function setTaskHours(h) {
+      document.getElementById("taskHours").value = h;
+    }
+
+    function setNlpText(txt) {
+      document.getElementById("nlpInputText").value = txt;
+    }
+
+    function switchTab(tabId) {
+      const triggerEl = document.querySelector(`[data-bs-target="#${tabId}"]`);
+      if (triggerEl) {
+        bootstrap.Tab.getInstance(triggerEl)?.show() || new bootstrap.Tab(triggerEl).show();
+      }
+    }
+
+    // --- API Calls ---
+
+    async function loadModules() {
+      try {
+        const res = await fetch("/api/modules");
+        cachedModules = await res.json();
+
+        // Populate dropdown
+        const select = document.getElementById("taskModule");
+        select.innerHTML = '<option value="" disabled selected>Select Module...</option>';
+        cachedModules.forEach(m => {
+          const opt = document.createElement("option");
+          opt.value = m.id;
+          opt.textContent = `${m.code} - ${m.name}`;
+          select.appendChild(opt);
+        });
+
+        // Populate module manager tab
+        const list = document.getElementById("modulesList");
+        list.innerHTML = "";
+        cachedModules.forEach(m => {
+          const item = document.createElement("div");
+          item.className = "d-flex justify-content-between align-items-center p-2 rounded border bg-white";
+          item.innerHTML = `
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge" style="background-color: ${m.color}">${m.code}</span>
+              <div>
+                <div class="fw-semibold small">${m.name}</div>
+                <small class="text-muted">${m.weekly_target_hours}h target/week</small>
+              </div>
+            </div>
+            <button class="btn btn-sm text-danger p-0" onclick="deleteModule(${m.id})">
+              <i class="bi bi-trash"></i>
+            </button>
+          `;
+          list.appendChild(item);
+        });
+      } catch (err) {
+        console.error("Failed to load modules", err);
+      }
+    }
+
+    async function loadTasks() {
+      try {
+        const res = await fetch("/api/tasks");
+        const tasks = await res.json();
+        
+        document.getElementById("activeTaskCount").textContent = tasks.length;
+        document.getElementById("metricTaskCount").textContent = tasks.length;
+
+        const list = document.getElementById("tasksList");
+        list.innerHTML = "";
+        if (tasks.length === 0) {
+          list.innerHTML = `<div class="text-muted small text-center py-2">No pending tasks. Add one above!</div>`;
+          return;
+        }
+
+        tasks.forEach(t => {
+          const dl = new Date(t.deadline);
+          const dlStr = dl.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+          const badgeClass = t.priority === 'high' ? 'priority-badge-high' : t.priority === 'medium' ? 'priority-badge-medium' : 'priority-badge-low';
+
+          const item = document.createElement("div");
+          item.className = "task-item p-2 shadow-sm border";
+          item.style.borderLeftColor = t.module_color || '#4f46e5';
+          item.innerHTML = `
+            <div class="d-flex justify-content-between align-items-start">
+              <div class="fw-semibold small">${t.title}</div>
+              <button class="btn btn-sm text-muted p-0 ms-1" onclick="deleteTask(${t.id})"><i class="bi bi-x-circle"></i></button>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mt-1">
+              <div class="d-flex gap-1 align-items-center">
+                <span class="badge bg-light text-dark border" style="font-size: 0.7rem;">${t.module_code || 'GEN'}</span>
+                <span class="badge ${badgeClass}" style="font-size: 0.7rem;">${t.priority}</span>
+                <span class="text-muted" style="font-size: 0.72rem;">${t.estimated_hours}h</span>
+              </div>
+              <small class="text-muted" style="font-size: 0.72rem;"><i class="bi bi-clock me-1"></i>${dlStr}</small>
+            </div>
+          `;
+          list.appendChild(item);
+        });
+      } catch (err) {
+        console.error("Failed to load tasks", err);
+      }
+    }
+
+    async function loadCommitments() {
+      try {
+        const res = await fetch("/api/commitments");
+        const comms = await res.json();
+        const list = document.getElementById("commitmentsList");
+        list.innerHTML = "";
+        if (comms.length === 0) {
+          list.innerHTML = `<div class="text-muted text-center py-1">No fixed commitments added.</div>`;
+          return;
+        }
+        comms.forEach(c => {
+          const st = new Date(c.start_time).toLocaleDateString([], { weekday: 'short', hour: '2-digit', minute: '2-digit' });
+          const et = new Date(c.end_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          const row = document.createElement("div");
+          row.className = "d-flex justify-content-between align-items-center p-1 border rounded bg-white";
+          row.innerHTML = `
+            <div>
+              <span class="fw-medium">${c.title}</span>
+              <span class="text-muted ms-1" style="font-size: 0.75rem;">${st} - ${et}</span>
+            </div>
+            <button class="btn btn-sm text-danger p-0" onclick="deleteCommitment(${c.id})"><i class="bi bi-x"></i></button>
+          `;
+          list.appendChild(row);
+        });
+      } catch (err) {
+        console.error("Failed to load commitments", err);
+      }
+    }
+
+    async function loadEvents() {
+      try {
+        const res = await fetch("/api/schedule/events");
+        const data = await res.json();
+        calendar.removeAllEvents();
+        calendar.addEventSource(data.events);
+
+        // Update metrics
+        let totalStudyHours = 0;
+        data.events.forEach(e => {
+          if (e.extendedProps?.type === "study") {
+            const start = new Date(e.start);
+            const end = new Date(e.end);
+            totalStudyHours += (end - start) / (1000 * 60 * 60);
+          }
+        });
+        document.getElementById("metricStudyHours").textContent = totalStudyHours.toFixed(1);
+
+        // Update risk banner
+        const risks = data.deadline_risks || [];
+        const banner = document.getElementById("riskBanner");
+        const pulse = document.getElementById("riskPulse");
+        const riskLabel = document.getElementById("riskLabel");
+
+        if (risks.length > 0) {
+          banner.classList.remove("d-none");
+          document.getElementById("riskBannerText").textContent = risks[0];
+          pulse.className = "pulse-dot pulse-dot-red";
+          riskLabel.textContent = "Deadline Risk Warning!";
+        } else {
+          banner.classList.add("d-none");
+          pulse.className = "pulse-dot pulse-dot-green";
+          riskLabel.textContent = "Schedule: Optimal";
+        }
+      } catch (err) {
+        console.error("Failed to load schedule events", err);
+      }
+    }
+
+    function showBlockDetails(event) {
+      const props = event.extendedProps || {};
+      document.getElementById("blockModalTitle").textContent = event.title;
+      document.getElementById("blockModalModule").textContent = props.module_code || "ACADEMIC";
+      document.getElementById("blockModalModule").style.backgroundColor = event.backgroundColor || "#4f46e5";
+
+      const start = new Date(event.start);
+      const end = new Date(event.end);
+      const durHours = ((end - start) / (1000 * 60 * 60)).toFixed(1);
+      document.getElementById("blockModalDuration").textContent = `${durHours} hours allocated`;
+
+      document.getElementById("blockModalStart").textContent = start.toLocaleString();
+      document.getElementById("blockModalEnd").textContent = end.toLocaleString();
+      document.getElementById("blockModalReason").textContent = props.reason || "Scheduled in your optimal free calendar window.";
+
+      new bootstrap.Modal(document.getElementById("blockModal")).show();
+    }
+
+    function bindEvents() {
+      // Structured Form Add Task
+      document.getElementById("formAddTask").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const payload = {
+          title: document.getElementById("taskTitle").value,
+          module_id: parseInt(document.getElementById("taskModule").value),
+          priority: document.getElementById("taskPriority").value,
+          deadline: document.getElementById("taskDeadline").value,
+          estimated_hours: parseFloat(document.getElementById("taskHours").value),
+          notes: document.getElementById("taskNotes").value
+        };
+
+        const res = await fetch("/api/tasks", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          document.getElementById("taskTitle").value = "";
+          document.getElementById("taskNotes").value = "";
+          await loadTasks();
+          // Auto-trigger AI scheduling
+          runScheduling();
+        }
+      });
+
+      // Natural Language Parse with Gemini
+      document.getElementById("btnParseNlp").addEventListener("click", async () => {
+        const text = document.getElementById("nlpInputText").value.trim();
+        if (!text) return;
+
+        const spinner = document.getElementById("nlpSpinner");
+        spinner.classList.remove("d-none");
+
+        try {
+          const res = await fetch("/api/tasks/parse-nl", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ prompt: text })
+          });
+          const parsed = await res.json();
+          pendingNlpData = parsed;
+
+          // Populate Preview Card
+          document.getElementById("prevTitle").textContent = parsed.title;
+          document.getElementById("prevModule").textContent = parsed.module_code || "GENERAL";
+          document.getElementById("prevPriority").textContent = parsed.priority.toUpperCase();
+          document.getElementById("prevHours").textContent = `${parsed.estimated_hours}h`;
+          document.getElementById("prevDeadline").textContent = parsed.is_commitment 
+            ? `${parsed.start_time} to ${parsed.end_time}` 
+            : parsed.deadline;
+          document.getElementById("nlpSourceTag").textContent = `Parsed via ${parsed.source}`;
+
+          document.getElementById("nlpPreviewCard").classList.remove("d-none");
+        } catch (err) {
+          alert("Failed to parse prompt. Please try again.");
+        } finally {
+          spinner.classList.add("d-none");
+        }
+      });
+
+      // Confirm & Add NLP Task
+      document.getElementById("btnConfirmNlpAdd").addEventListener("click", async () => {
+        if (!pendingNlpData) return;
+
+        if (pendingNlpData.is_commitment) {
+          // Add as commitment
+          await fetch("/api/commitments", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              title: pendingNlpData.title,
+              start_time: pendingNlpData.start_time,
+              end_time: pendingNlpData.end_time
+            })
+          });
+          await loadCommitments();
+        } else {
+          // Add as flexible task
+          await fetch("/api/tasks", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              title: pendingNlpData.title,
+              module_id: pendingNlpData.module_id,
+              priority: pendingNlpData.priority,
+              deadline: pendingNlpData.deadline,
+              estimated_hours: pendingNlpData.estimated_hours,
+              notes: pendingNlpData.notes || ""
+            })
+          });
+          await loadTasks();
+        }
+
+        hideNlpPreview();
+        document.getElementById("nlpInputText").value = "";
+        runScheduling();
+      });
+
+      // Add Module Form
+      document.getElementById("formAddModule").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const payload = {
+          code: document.getElementById("newModCode").value,
+          name: document.getElementById("newModName").value,
+          color: document.getElementById("newModColor").value,
+          weekly_target_hours: parseFloat(document.getElementById("newModTarget").value)
+        };
+
+        const res = await fetch("/api/modules", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          document.getElementById("newModCode").value = "";
+          document.getElementById("newModName").value = "";
+          await loadModules();
+        }
+      });
+
+      // Add Commitment Form
+      document.getElementById("formAddCommitment").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const payload = {
+          title: document.getElementById("commTitle").value,
+          start_time: document.getElementById("commStart").value,
+          end_time: document.getElementById("commEnd").value
+        };
+
+        const res = await fetch("/api/commitments", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          bootstrap.Modal.getInstance(document.getElementById("addCommitmentModal")).hide();
+          document.getElementById("commTitle").value = "";
+          await loadCommitments();
+          runScheduling();
+        }
+      });
+
+      // Run AI Scheduling Button
+      document.getElementById("btnRunSchedule").addEventListener("click", () => {
+        runScheduling();
+      });
+
+      // Feedback submission (Interactive AI coach loop)
+      document.getElementById("btnSubmitFeedback").addEventListener("click", async () => {
+        const feedback = document.getElementById("feedbackInput").value.trim();
+        if (!feedback) return;
+
+        const spinner = document.getElementById("feedbackSpinner");
+        spinner.classList.remove("d-none");
+
+        try {
+          const res = await fetch("/api/recommendations/feedback", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ feedback: feedback })
+          });
+          const data = await res.json();
+
+          // Update Coach UI
+          document.getElementById("coachMessage").textContent = data.coach_message;
+          document.getElementById("coachStatusTitle").textContent = data.risk_level === "critical" 
+            ? "Deadline Risk Alert" : "Coach Advice";
+
+          const recList = document.getElementById("recommendationsList");
+          recList.innerHTML = "";
+          (data.recommendations || []).forEach(r => {
+            const li = document.createElement("li");
+            li.className = "p-2 border rounded bg-white text-dark shadow-sm";
+            li.innerHTML = `<i class="bi bi-check2-circle text-primary me-1"></i> ${r}`;
+            recList.appendChild(li);
+          });
+
+          // Re-run scheduler to adapt timetable
+          await runScheduling();
+          document.getElementById("feedbackInput").value = "";
+        } catch (err) {
+          console.error("Feedback failed", err);
+        } finally {
+          spinner.classList.add("d-none");
+        }
+      });
+
+      // Settings API Key form
+      document.getElementById("formSaveApiKey").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const key = document.getElementById("inputApiKey").value.trim();
+        const statusDiv = document.getElementById("apiKeyStatus");
+
+        const res = await fetch("/api/settings/gemini-key", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ api_key: key })
+        });
+
+        if (res.ok) {
+          statusDiv.className = "small text-success mt-2";
+          statusDiv.textContent = "Gemini API Key saved successfully!";
+          setTimeout(() => {
+            bootstrap.Modal.getInstance(document.getElementById("settingsModal")).hide();
+            statusDiv.textContent = "";
+          }, 1200);
+        }
+      });
+
+      // Google Calendar Sync Button
+      document.getElementById("btnSyncGoogle").addEventListener("click", () => {
+        syncGoogleCalendar();
+      });
+
+      // Google Calendar Push Events Button
+      document.getElementById("btnPushGoogle").addEventListener("click", () => {
+        pushToGoogleCalendar();
+      });
+
+      // Google Calendar Simulate Clash Button (Demo Feature 2: Two-way sync)
+      document.getElementById("btnSimulateClash").addEventListener("click", () => {
+        simulateClash();
+      });
+
+      // Undo Displacement Button
+      document.getElementById("btnUndoConflict").addEventListener("click", () => {
+        undoDisplacement();
+      });
+
+      // Disconnect Google Button (in modal)
+      const btnDisc = document.getElementById("btnDisconnectGoogle");
+      if (btnDisc) {
+        btnDisc.addEventListener("click", () => {
+          disconnectGoogle();
+        });
+      }
+    }
+
+    async function checkGoogleStatus() {
+      try {
+        const res = await fetch("/api/google/status");
+        const status = await res.json();
+        const container = document.getElementById("googleStatusContainer");
+        const connectedModalState = document.getElementById("googleModalConnectedState");
+        const disconnectedModalState = document.getElementById("googleModalDisconnectedState");
+        const emailSpan = document.getElementById("googleModalEmail");
+
+        if (status.connected) {
+          container.innerHTML = `
+            <div class="dropdown d-inline-block">
+              <button class="btn btn-outline-success btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                <span class="pulse-dot pulse-dot-green"></span>
+                <span class="d-none d-sm-inline">${status.email || 'Google Cal'}</span>
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                <li><h6 class="dropdown-header">Google Calendar Connected</h6></li>
+                <li><a class="dropdown-item small" href="#" data-bs-toggle="modal" data-bs-target="#googleModal"><i class="bi bi-gear me-2"></i> Connection Details</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><button class="dropdown-item small text-danger" onclick="disconnectGoogle()"><i class="bi bi-box-arrow-right me-2"></i> Disconnect</button></li>
+              </ul>
+            </div>
+          `;
+          connectedModalState.classList.remove("d-none");
+          disconnectedModalState.classList.add("d-none");
+          emailSpan.textContent = status.email || "student@gmail.com";
+        } else {
+          container.innerHTML = `
+            <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#googleModal" id="btnGoogleConnect">
+              <i class="bi bi-google me-1 text-danger"></i> Connect Google Cal
+            </button>
+          `;
+          connectedModalState.classList.add("d-none");
+          disconnectedModalState.classList.remove("d-none");
+        }
+      } catch (err) {
+        console.error("Failed to check Google status", err);
+      }
+    }
+
+    async function syncGoogleCalendar() {
+      const spinner = document.getElementById("syncSpinner");
+      spinner.classList.remove("d-none");
+      try {
+        const res = await fetch("/api/google/sync", { method: "POST" });
+        const data = await res.json();
+        await loadEvents();
+
+        if (data.has_conflicts && data.displaced_tasks?.length > 0) {
+          const t = data.displaced_tasks[0];
+          document.getElementById("conflictAlertTitle").textContent = "Google Calendar Clash Detected & Resolved:";
+          document.getElementById("conflictAlertBody").textContent = `'${t.title}' was displaced and moved from ${t.old_slot} to ${t.new_slot}. Rest of your plan remains locked & stable.`;
+          document.getElementById("conflictAlertBanner").classList.remove("d-none");
+        } else {
+          alert("✅ Google Calendar Sync Complete: " + data.message);
+        }
+      } catch (err) {
+        alert("Failed to sync with Google Calendar.");
+      } finally {
+        spinner.classList.add("d-none");
+      }
+    }
+
+    async function pushToGoogleCalendar() {
+      const spinner = document.getElementById("pushSpinner");
+      spinner.classList.remove("d-none");
+      try {
+        const res = await fetch("/api/google/push-events", { method: "POST" });
+        const data = await res.json();
+        alert(data.message || "Study blocks pushed to Google Calendar!");
+      } catch (err) {
+        alert("Failed to push study blocks to Google Calendar.");
+      } finally {
+        spinner.classList.add("d-none");
+      }
+    }
+
+    async function simulateClash() {
+      try {
+        const res = await fetch("/api/google/simulate-clash", { method: "POST" });
+        const data = await res.json();
+
+        if (data.error) {
+          alert(data.error);
+          return;
+        }
+
+        await loadEvents();
+
+        if (data.displaced_tasks && data.displaced_tasks.length > 0) {
+          const t = data.displaced_tasks[0];
+          document.getElementById("conflictAlertTitle").textContent = "Google Calendar Clash Resolved:";
+          document.getElementById("conflictAlertBody").textContent = `New external event '${data.simulated_event.title}' clashed! AI re-placed only '${t.title}' (${t.old_slot} ➔ ${t.new_slot}) while keeping the rest of your week stable.`;
+          document.getElementById("conflictAlertBanner").classList.remove("d-none");
+        } else {
+          alert(data.message);
+        }
+      } catch (err) {
+        alert("Simulation failed. Make sure you have at least one study block scheduled!");
+      }
+    }
+
+    async function undoDisplacement() {
+      try {
+        const res = await fetch("/api/google/undo-displacement", { method: "POST" });
+        const data = await res.json();
+        if (data.success) {
+          document.getElementById("conflictAlertBanner").classList.add("d-none");
+          await loadEvents();
+        } else {
+          alert("No previous displacement found to undo.");
+        }
+      } catch (err) {
+        alert("Failed to undo displacement.");
+      }
+    }
+
+    async function disconnectGoogle() {
+      if (!confirm("Disconnect Google Calendar?")) return;
+      await fetch("/api/google/disconnect", { method: "POST" });
+      await checkGoogleStatus();
+      const modal = bootstrap.Modal.getInstance(document.getElementById("googleModal"));
+      if (modal) modal.hide();
+    }
+
+    async function runScheduling() {
+      const btn = document.getElementById("btnRunSchedule");
+      btn.innerHTML = `<span class="spinner-border spinner-border-sm me-1" role="status"></span> Thinking...`;
+      btn.disabled = true;
+
+      try {
+        const res = await fetch("/api/schedule/generate", { method: "POST" });
+        const result = await res.json();
+        await loadEvents();
+      } catch (err) {
+        console.error("Scheduling failed", err);
+      } finally {
+        btn.innerHTML = `<i class="bi bi-magic me-1"></i> Schedule with AI`;
+        btn.disabled = false;
+      }
+    }
+
+    function hideNlpPreview() {
+      document.getElementById("nlpPreviewCard").classList.add("d-none");
+      pendingNlpData = null;
+    }
+
+    async function deleteTask(id) {
+      if (!confirm("Delete this task?")) return;
+      await fetch(`/api/tasks/${id}`, { method: "DELETE" });
+      await loadTasks();
+      runScheduling();
+    }
+
+    async function deleteCommitment(id) {
+      if (!confirm("Delete this commitment?")) return;
+      await fetch(`/api/commitments/${id}`, { method: "DELETE" });
+      await loadCommitments();
+      runScheduling();
+    }
+
+    async function deleteModule(id) {
+      if (!confirm("Delete this module and its associated tasks?")) return;
+      await fetch(`/api/modules/${id}`, { method: "DELETE" });
+      await loadModules();
+      await loadTasks();
+      runScheduling();
+    }
+  </script>
+</body>
+</html>
