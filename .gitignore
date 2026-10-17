@@ -3,6 +3,8 @@
 
 .db
 .db/
+token.json
+credentials.json
 
 ### Flask ###
 instance/*

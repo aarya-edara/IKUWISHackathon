@@ -1,8 +1,16 @@
 
-Flask
+flask==3.1.3
 Flask-WTF
 python-dotenv
 psycopg2-binary
 gunicorn
-
 bcrypt
+
+google-genai
+elevenlabs==2.39.0
+# Google Calendar Requirements
+google.auth.transport.requests
+google.oauth2.credentials
+google_auth_oauthlib.flow
+googleapiclient.discovery
+googleapiclient.errors
