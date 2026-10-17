@@ -34,7 +34,7 @@ def authenticateUserCredentials():
 
 
 
-def PrintNext10Events():
+def getNext10Events():
 
     # Authenticate User Start ↓↓↓
     creds  = authenticateUserCredentials()
@@ -58,15 +58,15 @@ def PrintNext10Events():
             .execute()
         )
         events = events_result.get("items", [])
-
+        return events
         if not events:
             print("No upcoming events found.")
             return
 
-        # Prints the start and name of the next 10 events
-        for event in events:
-            start = event["start"].get("dateTime", event["start"].get("date"))
-            print(start, event["summary"])
+        # # Prints the start and name of the next 10 events
+        # for event in events:
+        #     start = event["start"].get("dateTime", event["start"].get("date"))
+        #     print(start, event["summary"])
 
     except HttpError as error:
         print(f"An error occurred: {error}")
@@ -97,26 +97,32 @@ def getAllEventsInADay(Date):
             .execute()
         )
         events = events_result.get("items", [])
+        return events
 
         if not events:
             print("No upcoming events found.")
             return
 
-        # Prints the start and name of the next 10 events
-        for event in events:
-            start = event["start"].get("dateTime", event["start"].get("date"))
-            print(start, event["summary"])
+
 
     except HttpError as error:
         print(f"An error occurred: {error}")
     # except:
     #     print("Another error occurred")
 
+def printAllEventsInTerminal(Events):
+    try :
+        for event in Events:
+            start = event["start"].get("dateTime", event["start"].get("date"))
+            print(start, event["summary"])
+    except TypeError:
+        print("No upcoming events found.")
 
 def main():
-    PrintNext10Events()
+    events = getNext10Events()
     # Today = datetime.datetime.now(tz=datetime.timezone.utc)
-    # getAllEventsInADay(Today)
+    # events = getAllEventsInADay(Today)
+    printAllEventsInTerminal(events)
 
 
 if __name__ == "__main__":
