@@ -59,14 +59,7 @@ def getNext10Events():
         )
         events = events_result.get("items", [])
         return events
-        if not events:
-            print("No upcoming events found.")
-            return
 
-        # # Prints the start and name of the next 10 events
-        # for event in events:
-        #     start = event["start"].get("dateTime", event["start"].get("date"))
-        #     print(start, event["summary"])
 
     except HttpError as error:
         print(f"An error occurred: {error}")
