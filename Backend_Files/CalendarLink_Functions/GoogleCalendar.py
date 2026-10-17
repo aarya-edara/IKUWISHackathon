@@ -114,9 +114,9 @@ def getAllEventsInADay(Date):
 
 
 def main():
-    #PrintNext10Events()
-    Today = datetime.datetime.now(tz=datetime.timezone.utc)
-    getAllEventsInADay(Today)
+    PrintNext10Events()
+    # Today = datetime.datetime.now(tz=datetime.timezone.utc)
+    # getAllEventsInADay(Today)
 
 
 if __name__ == "__main__":
