@@ -17,7 +17,7 @@ from dotenv import load_dotenv
 from psycopg2 import errors
 from jinja2 import ChoiceLoader, FileSystemLoader
 
-from Database_Functions.UserDatabaseFunctions import (
+from Backend_Files.Database_Functions.UserDatabaseFunctions import (
     add_user,
     get_user,
     check_login
