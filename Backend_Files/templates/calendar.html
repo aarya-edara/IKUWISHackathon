@@ -1,27 +1,49 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <link rel="stylesheet" href="../static/calendarstyle.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='calendarstyle.css') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&family=Press+Start+2P&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Handjet:wght,ELSH@100..900,2&family=Pixelify+Sans:wght@400..700&family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+
+   <!--    <link rel="stylesheet" href="{{ url_for('static', filename='calendarstyle.css') }}"> -->
+
 </head>
 
 <body>
+
+<nav>
+    <a href="/" class="site-name">
+        This month's calendar
+    </a>
+
+    <a href="/tasks" class="site-name">
+        Task Manager
+    </a>
+</nav>
+
+<img src="{{ url_for('static', filename='star.gif') }}" alt="" class="star star-1">
+<img src="{{ url_for('static', filename='star.gif') }}" alt="" class="star star-2">
+<img src="{{ url_for('static', filename='star.gif') }}" alt="" class="star star-3">
+<img src="{{ url_for('static', filename='star.gif') }}" alt="" class="star star-4">
+
     <div class="calendar">
 
     <div class="header">
         <div id="prev" class="btn">
-            <img src="../../pixelatedarrow.png" class="prev-arrow">
+            <img src="{{ url_for('static', filename='pixelatedarrow.png') }}" class="prev-arrow">
         </div>
 
-        <div id="month-year"></div>
+        <div class="title-wrap">
+            <img src="https://i.gifer.com/Mc28.gif" alt="Saturn" class="header-gif">
+            <div id="month-year"></div>
+        </div>
 
         <div id="next" class="btn">
-            <img src="../../pixelatedarrow.png" class="next-arrow">
+            <img src="{{ url_for('static', filename='pixelatedarrow.png') }}" class="next-arrow">
         </div>
     </div>
 
@@ -49,7 +71,9 @@
 
     </div>
 
-    <script src="../../calendar.js"></script>
+
+
+    <script src="{{ url_for('static', filename='calendar.js') }}"></script>
 </body>
 
 

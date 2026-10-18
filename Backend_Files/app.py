@@ -54,7 +54,11 @@ print("Project folder:", BASE_DIR)
 
 print("Backend templates:", TEMPLATE_DIR)
 print("Frontend templates:", FRONTEND_TEMPLATE_DIR)
+from flask import Flask, render_template
+from taskmanager import taskmanager_bp
 
+app = Flask(__name__)
+app.register_blueprint(taskmanager_bp)
 print(
     "Launch page exists:",
     (TEMPLATE_DIR / "Launch_Page.html").is_file()
@@ -117,13 +121,9 @@ CSRFProtect(app)
 
 @app.route("/")
 def launchPage():
-
     return render_template("Launch_Page.html")
 
-
-# ==========================================
 # REGISTER NEW USER
-# ==========================================
 
 @app.route("/register", methods=["POST"])
 def register():

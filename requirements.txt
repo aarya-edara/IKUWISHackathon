@@ -8,6 +8,8 @@ bcrypt
 
 google-genai
 elevenlabs==2.39.0
+pandas
+
 # Google Calendar Requirements
 google.auth.transport.requests
 google.oauth2.credentials
