@@ -164,5 +164,3 @@ document.addEventListener('DOMContentLoaded', function () {
     renderCalendar(currentDate);
     renderTasks();
 });
-
-<script src="{{ url_for('static', filename='calendar.js', v='2') }}"></script>

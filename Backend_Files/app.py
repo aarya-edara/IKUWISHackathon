@@ -100,6 +100,8 @@ app = Flask(
     static_folder=str(STATIC_DIR)
 )
 
+print("FLASK STATIC FOLDER:", app.static_folder)
+
 # Allow Flask to find HTML files
 # in both template folders
 
@@ -351,3 +353,4 @@ if __name__ == "__main__":
         port=5000,
         debug=False
     )
+
