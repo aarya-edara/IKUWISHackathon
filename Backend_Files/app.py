@@ -1,4 +1,3 @@
-
 import os
 from pathlib import Path
 
@@ -12,7 +11,8 @@ from flask import (
     flash
 )
 
-from flask_wtf.csrf import CSRFProtect
+from flask_wtf.csrf import CSRFProtect, CSRFError
+from werkzeug.middleware.proxy_fix import ProxyFix
 from dotenv import load_dotenv
 from psycopg2 import errors
 from jinja2 import ChoiceLoader, FileSystemLoader
@@ -34,7 +34,6 @@ from google_auth_oauthlib.flow import Flow
 global SCOPES
 SCOPES = ["https://www.googleapis.com/auth/calendar.readonly"]
 import json
-GOOGLE_CALLBACK = "https://www.almanac.luxe/google/callback"
 import Backend_Files.CalendarLink_Functions.GoogleCalendar as GoogleCalendar
 
 # ==========================================
@@ -46,6 +45,18 @@ BASE_DIR = APP_DIR.parent
 
 # Load environment variables
 load_dotenv(BASE_DIR / ".env")
+
+# Where Google sends users back after sign-in.
+# For local testing, put GOOGLE_CALLBACK=http://127.0.0.1:5001/google/callback in .env
+# (and add that URL to the Google Cloud console).
+GOOGLE_CALLBACK = os.getenv(
+    "GOOGLE_CALLBACK",
+    "https://www.almanac.luxe/google/callback"
+)
+
+# Google only allows http:// callbacks when this is set (local testing only)
+if GOOGLE_CALLBACK.startswith("http://"):
+    os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
 # HTML templates are in two different folders
 TEMPLATE_DIR = APP_DIR / "templates"
@@ -100,6 +111,10 @@ app = Flask(
 
 print("FLASK STATIC FOLDER:", app.static_folder)
 
+# The live site runs behind an HTTPS proxy. This makes Flask see the real
+# https address, which the CSRF check and Google sign-in both need.
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
+
 # Allow Flask to find HTML files
 # in both template folders
 
@@ -124,10 +139,40 @@ app.config["SESSION_COOKIE_SECURE"] = (
     os.getenv("FLASK_COOKIE_SECURE", "false").lower() == "true"
 )
 
+# CSRF tokens last as long as the session, so a page left open doesn't break
+app.config["WTF_CSRF_TIME_LIMIT"] = None
+
 # Enable CSRF protection
 CSRFProtect(app)
+
 from Backend_Files.taskmanager import taskmanager_bp
 app.register_blueprint(taskmanager_bp)
+
+
+# Instead of a blank "400 Bad Request" page, send the user back with a message
+@app.errorhandler(CSRFError)
+def handle_csrf_error(error):
+    print("CSRF check failed:", error.description)
+    flash("That page was out of date, so nothing was saved. Please try again.")
+    return redirect(request.referrer or url_for("launchPage"))
+
+# Never cache pages, so the Back button always loads a fresh page
+# (an old cached page has an out-of-date CSRF token)
+@app.after_request
+def no_cache_pages(response):
+    if response.mimetype == "text/html":
+        response.headers["Cache-Control"] = "no-store"
+    return response
+
+
+# Log a user in without losing their tasks, and without making
+# forms on pages that are already open stop working
+def start_login_session(user_id):
+    keep = {key: session[key] for key in ("tasks", "csrf_token") if key in session}
+    session.clear()
+    session.update(keep)
+    session["user_id"] = user_id
+
 
 # HOME PAGE
 
@@ -167,15 +212,14 @@ def register():
         return redirect(url_for("launchPage"))
 
     # Log in newly registered user
-    session.clear()
-    session["user_id"] = user_id
+    start_login_session(user_id)
 
     return redirect(url_for("dashboard"))
 
 
 # ==========================================
 # LOGIN EXISTING USER
-# ==========================================
+
 
 @app.route("/login", methods=["POST"])
 def login():
@@ -194,8 +238,8 @@ def login():
         return redirect(url_for("launchPage"))
 
     # Create login session
-    session.clear()
-    session["user_id"] = user_id
+
+    start_login_session(user_id)
 
     return redirect(url_for("dashboard"))
 
@@ -218,20 +262,25 @@ def dashboard():
     if user is None:
         session.clear()
         return redirect(url_for("launchPage"))
-    else:
-        # Load Google credentials, or redirect to Google sign-in.
-        creds = authenticateUserCredentials(user_id)
 
-        if creds is None:
-            return redirect(url_for("connect_google"))
+    # Load Google events if Google is connected. The calendar still
+    # shows without them, with a "Connect Google Calendar" link.
+    creds = authenticateUserCredentials(user_id)
+    events = []
+
+    if creds is not None:
+        try:
+            events = GoogleCalendar.getAllEventsInAllCalendars(creds) or []
+        except Exception as error:
+            print("Could not load Google events:", error)
+            events = []
 
     # Display calendar page
-    events = GoogleCalendar.getAllEventsInAllCalendars(creds)
-
     return render_template(
         "calendar.html",
         user=user,
-        events=events
+        events=events,
+        google_connected=creds is not None
     )
 
 # ==========================================
@@ -327,24 +376,28 @@ def google_callback():
     if not flow.code_verifier:
         return "Sign-in session expired. Please connect Google again.", 400
 
-    flow.fetch_token(code=request.args["code"])
+    try:
+        flow.fetch_token(code=request.args["code"])
+    except Exception as error:
+        print("Google token exchange failed:", error)
+        flash("Google Calendar could not be connected. Please try again.")
+        return redirect(url_for("dashboard"))
+
     creds = flow.credentials
 
     save_google_token(user_id, creds.to_json())
 
     return redirect(url_for("dashboard"))
 
-# Google Calendar Import/Management End  -------------------------------------------- ↑↑↑
+# Google Calendar Import/Management End
 
-# ==========================================
 # RUN FLASK LOCALLY
-# ==========================================
+
 
 if __name__ == "__main__":
 
     app.run(
         host="127.0.0.1",
-        port=5000,
+        port=5001,
         debug=False
     )
-

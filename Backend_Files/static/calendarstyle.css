@@ -78,15 +78,16 @@ gap: 10px
 }
 
 
-.days div {
+.days div:hover {
     cursor: pointer;
     transition: background-color 0.3s;
 }
+
 .days div:hover {
     background-color: #bdf6fe;
     color: white;
-
 }
+
 .today {
     background-color: #ffd1df;
     border-radius: 50%;
@@ -420,10 +421,16 @@ nav {
     width: 90%;
     box-sizing: border-box;
     color: #030645;
+    background-color: #f0b70c;
+    box-shadow: 2px 2px 0 #ffd1df;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
+.cal-task.priority-high   { background-color: #ffd1df; box-shadow: 2px 2px 0 #f0b70c; }
+.cal-task.priority-medium { background-color: #f0b70c; box-shadow: 2px 2px 0 #ffd1df; }
+.cal-task.priority-low    { background-color: #bdf6fe; box-shadow: 2px 2px 0 #f0b70c; }
 
 .title-wrap {
     display: flex;
@@ -879,4 +886,41 @@ body.launch-page {
 
     border-right: 1px solid #f0b70c;
     border-bottom: 1px solid #f0b70c;
+}
+
+/* ===== TASK MANAGER TASKS ON THE CALENDAR ===== */
+
+.days > div > .cal-task {
+    display: block;
+    position: static;
+    flex: none;
+    width: 90%;
+    min-width: 0;
+    padding: 2px 4px;
+    margin: 0;
+    font-size: 14px;
+    line-height: 18px;
+    text-align: left;
+    border-radius: 0;
+}
+
+/* hovering a day shouldn't recolour the events and tasks inside it */
+.days > div > .google-event:hover,
+.days > div > .cal-task:hover {
+    color: #030645;
+}
+
+form.clear-form {
+    border: none;
+    box-shadow: none;
+    background: transparent;
+    padding: 0;
+    width: auto;
+    margin-top: 20px;
+}
+
+form.clear-form button {
+    background-color: #555;
+    color: #FFFFFF;
+    box-shadow: 4px 4px 0 #f0b70c;
 }
