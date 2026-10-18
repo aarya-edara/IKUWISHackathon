@@ -1,8 +1,7 @@
 import datetime
 import os.path
 
-from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
+
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
@@ -33,11 +32,7 @@ def authenticateUserCredentials():
         print("https://developers.google.com/workspace/calendar/api/quickstart/python")
 
 
-def getNext10Events():
-
-    # Authenticate User Start ↓↓↓
-    creds  = authenticateUserCredentials()
-    # Authenticate User End ↑↑↑
+def getNext10Events(creds):
 
     try:
         service = build("calendar", "v3", credentials=creds)
@@ -65,10 +60,7 @@ def getNext10Events():
     except:
         print("Another error occurred")
 
-def getAllEventsInADay(Date,CalendarID):
-    # Authenticate User Start ↓↓↓
-    creds = authenticateUserCredentials()
-    # Authenticate User End ↑↑↑
+def getAllEventsInADay(creds,Date,CalendarID):
 
     try:
         service = build("calendar", "v3", credentials=creds)
@@ -96,10 +88,7 @@ def getAllEventsInADay(Date,CalendarID):
     except:
        print("Another error occurred")
 
-def getAllEventsInACalendar(CalendarID):
-    # Authenticate User Start ↓↓↓
-    creds = authenticateUserCredentials()
-    # Authenticate User End ↑↑↑
+def getAllEventsInACalendar(creds,CalendarID):
 
     try:
         service = build("calendar", "v3", credentials=creds)
@@ -137,10 +126,7 @@ def printAllEventsInTerminal(Events):
     except TypeError:
         print("No upcoming events found.")
 
-def getAllCalendarIDs():
-    # Authenticate User Start ↓↓↓
-    creds = authenticateUserCredentials()
-    # Authenticate User End ↑↑↑
+def getAllCalendarIDs(creds):
     # Google API for getting all events in calendaer
     service = build("calendar", "v3", credentials=creds)
     AllCalendars = service.calendarList().list(maxResults=250).execute().get("items", [])
@@ -152,31 +138,36 @@ def getAllCalendarIDs():
 
     return allCalendarsIDs
 
-def getDailyEventsInAllCalendars():
-    AllCalendarsIDs = getAllCalendarIDs()
+def getDailyEventsInAllCalendars(creds):
+    AllCalendarsIDs = getAllCalendarIDs(creds)
     events = []
     Date = datetime.datetime.now(tz=datetime.timezone.utc)
     for ID in AllCalendarsIDs:
-        events.extend(getAllEventsInADay(Date,ID))
+        events.extend(getAllEventsInADay(creds,Date,ID))
 
     return events
 
-def getAllEventsInAllCalendars():
-    AllCalendarsIDs = getAllCalendarIDs()
+def getAllEventsInAllCalendars(creds):
+    AllCalendarsIDs = getAllCalendarIDs(creds)
     events = []
 
     for ID in AllCalendarsIDs:
-        events.extend(getAllEventsInACalendar(ID))
+        events.extend(getAllEventsInACalendar(creds,ID))
 
     return events
 
 def main():
-    # events = getNext10Events()
-    # events = getAllEventsInACalendar('CALENDAR ID HERE')
-    # events = getAllEventsInAllCalendars()
-    events = getDailyEventsInAllCalendars()
+
+    # Authenticate User Start ↓↓↓
+    creds = authenticateUserCredentials()
+    # Authenticate User End ↑↑↑
+
+    # events = getNext10Events(creds)
+    # events = getAllEventsInACalendar(creds,'CALENDAR ID HERE')
+    # events = getAllEventsInAllCalendars(creds)
+    events = getDailyEventsInAllCalendars(creds)
     # Today = datetime.datetime.now(tz=datetime.timezone.utc)
-    # events = getAllEventsInADay(Today)
+    # events = getAllEventsInADay(creds,Today)
     printAllEventsInTerminal(events)
 
 

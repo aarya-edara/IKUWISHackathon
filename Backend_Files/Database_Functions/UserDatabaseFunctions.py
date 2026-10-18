@@ -198,16 +198,16 @@ def get_user(user_number):
         with connection.cursor(
             cursor_factory=RealDictCursor
         ) as cursor:
-
             cursor.execute("""
-                SELECT
-                    user_number,
-                    email,
-                    username,
-                    individual_link
-                FROM public.users
-                WHERE user_number = %s;
-            """, (user_number,))
+                            SELECT
+                                user_number,
+                                email,
+                                username,
+                                individual_link,
+                                google_token
+                            FROM public.users
+                            WHERE user_number = %s;
+                        """, (user_number,))
 
             result = cursor.fetchone()
 
