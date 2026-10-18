@@ -1,8 +1,5 @@
 import datetime
-import os.path
 
-
-from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
@@ -134,18 +131,14 @@ def getAllEventsInAllCalendars(creds):
     return events
 
 def main():
-
-    # Authenticate User Start ↓↓↓
-    creds = authenticateUserCredentials()
-    # Authenticate User End ↑↑↑
-
+    ""
     # events = getNext10Events(creds)
     # events = getAllEventsInACalendar(creds,'CALENDAR ID HERE')
     # events = getAllEventsInAllCalendars(creds)
-    events = getDailyEventsInAllCalendars(creds)
+    #events = getDailyEventsInAllCalendars(creds)
     # Today = datetime.datetime.now(tz=datetime.timezone.utc)
     # events = getAllEventsInADay(creds,Today)
-    printAllEventsInTerminal(events)
+    #printAllEventsInTerminal(events)
 
 
 
