@@ -23,6 +23,15 @@ from Backend_Files.Database_Functions.UserDatabaseFunctions import (
     check_login
 )
 
+# Google calendar Imports
+from google.oauth2.credentials import Credentials
+from google.auth.transport.requests import Request
+from google_auth_oauthlib.flow import Flow
+global SCOPES
+SCOPES = ["https://www.googleapis.com/auth/calendar.readonly"]
+import json
+GOOGLE_CALLBACK = "https://www.almanac.luxe/google/callback"
+import Backend_Files.CalendarLink_Functions.GoogleCalendar as GoogleCalendar
 
 # ==========================================
 # PROJECT FOLDERS
@@ -191,7 +200,6 @@ def login():
 
 @app.route("/dashboard")
 def dashboard():
-
     user_id = session.get("user_id")
 
     # If not logged in, return to homepage
@@ -202,16 +210,20 @@ def dashboard():
     user = get_user(user_id)
 
     if user is None:
-
         session.clear()
         return redirect(url_for("launchPage"))
+    else:
+        # Load Google credentials, or redirect to Google sign-in.
+        creds = authenticateUserCredentials(user_id)
+
+        if creds is None:
+            return redirect(url_for("connect_google"))
 
     # Display calendar page
     return render_template(
         "calendar.html",
         user=user
     )
-
 
 # ==========================================
 # LOGOUT
@@ -224,6 +236,90 @@ def logout():
 
     return redirect(url_for("launchPage"))
 
+
+# Google Calendar Import/Management Start -------------------------------------------- ↓↓↓
+
+def authenticateUserCredentials(user_id):
+    try:
+        creds = None
+        user = get_user(user_id)
+
+        if user and user.get("google_token"):
+            creds = Credentials.from_authorized_user_info(
+                json.loads(user["google_token"]), SCOPES
+            )
+
+        if not creds or not creds.valid:
+            if creds and creds.expired and creds.refresh_token:
+                creds.refresh(Request())
+            else:
+                return None  # Flask will start Google sign-in
+
+            save_google_token(user_id, creds.to_json())
+
+        return creds
+
+    except Exception as error:
+        print("Google authentication failed:", error)
+        return None
+
+def save_google_token(user_id, creds):
+    # todo:
+    print("Save Token")
+
+@app.route("/connect-google")
+def connect_google():
+    if "user_id" not in session:
+        return redirect(url_for("launchPage"))
+
+    flow = Flow.from_client_secrets_file(
+        str(APP_DIR / "CalendarLink_Functions" / "credentials.json"),
+        scopes=SCOPES,
+        redirect_uri=GOOGLE_CALLBACK
+    )
+
+    auth_url, state = flow.authorization_url(
+        access_type="offline",
+        prompt="consent"
+    )
+
+    session["google_state"] = state
+    session["google_connect_user"] = session["user_id"]
+
+    return redirect(auth_url)
+
+
+@app.route("/google/callback")
+def google_callback():
+    state = session.pop("google_state", None)
+    user_id = session.pop("google_connect_user", None)
+
+    # Ensure this callback belongs to the user who started sign-in.
+    if (
+        not state
+        or request.args.get("state") != state
+        or user_id is None
+        or session.get("user_id") != user_id
+    ):
+        return "Invalid sign-in session. Please try again.", 400
+
+    if request.args.get("error") or not request.args.get("code"):
+        return "Google Calendar connection was not completed.", 400
+
+    flow = Flow.from_client_secrets_file(
+        str(APP_DIR / "CalendarLink_Functions" / "credentials.json"),
+        scopes=SCOPES,
+        redirect_uri=GOOGLE_CALLBACK
+    )
+
+    flow.fetch_token(code=request.args["code"])
+    creds = flow.credentials
+
+    save_google_token(user_id, creds.to_json())
+
+    return redirect(url_for("dashboard"))
+
+# Google Calendar Import/Management End  -------------------------------------------- ↑↑↑
 
 # ==========================================
 # RUN FLASK LOCALLY
