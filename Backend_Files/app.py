@@ -64,7 +64,7 @@ print("Project folder:", BASE_DIR)
 print("Backend templates:", TEMPLATE_DIR)
 print("Frontend templates:", FRONTEND_TEMPLATE_DIR)
 from flask import Flask, render_template
-from taskmanager import taskmanager_bp
+from Backend_Files.taskmanager import taskmanager_bp
 
 app = Flask(__name__)
 app.register_blueprint(taskmanager_bp)
