@@ -65,7 +65,7 @@ def getNext10Events():
     except:
         print("Another error occurred")
 
-def getAllEventsInADay(Date):
+def getAllEventsInADay(Date,CalendarID):
     # Authenticate User Start ↓↓↓
     creds = authenticateUserCredentials()
     # Authenticate User End ↑↑↑
@@ -80,7 +80,7 @@ def getAllEventsInADay(Date):
         events_result = (
             service.events()
             .list(
-                calendarId="primary",
+                calendarId=CalendarID,
                 timeMin=StartDate.isoformat(),
                 timeMax =EndDate.isoformat(),
                 singleEvents=True,
@@ -137,7 +137,7 @@ def printAllEventsInTerminal(Events):
     except TypeError:
         print("No upcoming events found.")
 
-def getAllEventsInAllCalendars():
+def getAllCalendarIDs():
     # Authenticate User Start ↓↓↓
     creds = authenticateUserCredentials()
     # Authenticate User End ↑↑↑
@@ -145,20 +145,36 @@ def getAllEventsInAllCalendars():
     service = build("calendar", "v3", credentials=creds)
     AllCalendars = service.calendarList().list(maxResults=250).execute().get("items", [])
 
-    events = []
-
+    allCalendarsIDs = []
     for calendar in AllCalendars:
         # Get calendar ID
-        CalendarID = calendar["id"]
-        new_events = getAllEventsInACalendar(CalendarID)
-        events.extend(new_events)
+        allCalendarsIDs.append(calendar["id"])
+
+    return allCalendarsIDs
+
+def getDailyEventsInAllCalendars():
+    AllCalendarsIDs = getAllCalendarIDs()
+    events = []
+    Date = datetime.datetime.now(tz=datetime.timezone.utc)
+    for ID in AllCalendarsIDs:
+        events.extend(getAllEventsInADay(Date,ID))
+
+    return events
+
+def getAllEventsInAllCalendars():
+    AllCalendarsIDs = getAllCalendarIDs()
+    events = []
+
+    for ID in AllCalendarsIDs:
+        events.extend(getAllEventsInACalendar(ID))
 
     return events
 
 def main():
     # events = getNext10Events()
     # events = getAllEventsInACalendar('CALENDAR ID HERE')
-    events = getAllEventsInAllCalendars()
+    # events = getAllEventsInAllCalendars()
+    events = getDailyEventsInAllCalendars()
     # Today = datetime.datetime.now(tz=datetime.timezone.utc)
     # events = getAllEventsInADay(Today)
     printAllEventsInTerminal(events)
