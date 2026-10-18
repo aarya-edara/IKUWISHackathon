@@ -96,7 +96,7 @@ def getAllEventsInADay(Date):
     except:
        print("Another error occurred")
 
-def getAllEventsInCalendar(CalendarID):
+def getAllEventsInACalendar(CalendarID):
     # Authenticate User Start ↓↓↓
     creds = authenticateUserCredentials()
     # Authenticate User End ↑↑↑
@@ -129,8 +129,6 @@ def getAllEventsInCalendar(CalendarID):
     #     print("Another error occurred")
 
 
-
-
 def printAllEventsInTerminal(Events):
     try :
         for event in Events:
@@ -139,13 +137,32 @@ def printAllEventsInTerminal(Events):
     except TypeError:
         print("No upcoming events found.")
 
+def getAllEventsInAllCalendars():
+    # Authenticate User Start ↓↓↓
+    creds = authenticateUserCredentials()
+    # Authenticate User End ↑↑↑
+    # Google API for getting all events in calendaer
+    service = build("calendar", "v3", credentials=creds)
+    AllCalendars = service.calendarList().list(maxResults=250).execute().get("items", [])
+
+    events = []
+
+    for calendar in AllCalendars:
+        # Get calendar ID
+        CalendarID = calendar["id"]
+        new_events = getAllEventsInACalendar(CalendarID)
+        events.extend(new_events)
+
+    return events
 
 def main():
     # events = getNext10Events()
-    events = getAllEventsInCalendar('vjnbcrcpdoc16ao7bghfaun2j1sv11b9@import.calendar.google.com')
+    # events = getAllEventsInACalendar('CALENDAR ID HERE')
+    events = getAllEventsInAllCalendars()
     # Today = datetime.datetime.now(tz=datetime.timezone.utc)
     # events = getAllEventsInADay(Today)
     printAllEventsInTerminal(events)
+
 
 
 if __name__ == "__main__":
