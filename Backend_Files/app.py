@@ -136,6 +136,10 @@ CSRFProtect(app)
 def launchPage():
     return render_template("Launch_Page.html")
 
+@app.route("/tasks")
+def TaskPage():
+    return render_template("taskmanager.html")
+
 # REGISTER NEW USER
 
 @app.route("/register", methods=["POST"])
