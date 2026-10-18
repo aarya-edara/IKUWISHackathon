@@ -23,6 +23,10 @@ from Backend_Files.Database_Functions.UserDatabaseFunctions import (
     check_login
 )
 
+from Backend_Files.Database_Functions.UserDatabaseFunctions import (
+    save_google_token as save_google_token_to_database
+)
+
 # Google calendar Imports
 from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
@@ -63,6 +67,8 @@ print("Project folder:", BASE_DIR)
 
 print("Backend templates:", TEMPLATE_DIR)
 print("Frontend templates:", FRONTEND_TEMPLATE_DIR)
+from flask import Flask, render_template
+from Backend_Files.taskmanager import taskmanager_bp
 
 
 print(
@@ -129,6 +135,10 @@ app.register_blueprint(taskmanager_bp)
 @app.route("/")
 def launchPage():
     return render_template("Launch_Page.html")
+
+@app.route("/tasks")
+def TaskPage():
+    return render_template("taskmanager.html")
 
 # REGISTER NEW USER
 
@@ -262,8 +272,8 @@ def authenticateUserCredentials(user_id):
         return None
 
 def save_google_token(user_id, creds):
-    # todo:
-    print("Save Token")
+    save_google_token_to_database(user_id, creds)
+
 
 @app.route("/connect-google")
 def connect_google():
@@ -281,6 +291,7 @@ def connect_google():
         prompt="consent"
     )
 
+    session["google_code_verifier"] = flow.code_verifier
     session["google_state"] = state
     session["google_connect_user"] = session["user_id"]
 
@@ -309,6 +320,11 @@ def google_callback():
         scopes=SCOPES,
         redirect_uri=GOOGLE_CALLBACK
     )
+
+    flow.code_verifier = session.pop("google_code_verifier", None)
+
+    if not flow.code_verifier:
+        return "Sign-in session expired. Please connect Google again.", 400
 
     flow.fetch_token(code=request.args["code"])
     creds = flow.credentials

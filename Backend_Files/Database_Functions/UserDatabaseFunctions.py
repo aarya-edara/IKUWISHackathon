@@ -39,7 +39,8 @@ def create_user_table():
                     email TEXT UNIQUE NOT NULL,
                     username TEXT UNIQUE NOT NULL,
                     password_hash TEXT NOT NULL,
-                    individual_link TEXT
+                    individual_link TEXT,
+                    google_token TEXT
                 );
             """)
 
@@ -272,6 +273,22 @@ def check_login(identifier, password):
 
     return None
 
+def save_google_token(user_id, creds):
+    connection = connect_database()
+
+    try:
+        with connection:
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    UPDATE public.users
+                    SET google_token = %s
+                    WHERE user_number = %s;
+                """, (creds, user_id))
+
+                if cursor.rowcount == 0:
+                    raise ValueError("User not found")
+    finally:
+        connection.close()
 
 # ==========================================
 # 8. RUN DATABASE SETUP
