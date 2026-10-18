@@ -134,7 +134,9 @@ CSRFProtect(app)
 
 @app.route("/")
 def launchPage():
-    return render_template("Launch_Page.html")
+    response = app.make_response(render_template("Launch_Page.html"))
+    response.headers["Cache-Control"] = "no-store"
+    return response
 
 @app.route("/tasks")
 def TaskPage():
