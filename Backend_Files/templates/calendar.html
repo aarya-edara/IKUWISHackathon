@@ -71,8 +71,9 @@
 
     </div>
 
-
-
+    <script>
+    window.googleEvents = {{ events | tojson }};
+    </script>
     <script src="{{ url_for('static', filename='calendar.js') }}"></script>
 </body>
 

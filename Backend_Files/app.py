@@ -228,9 +228,12 @@ def dashboard():
             return redirect(url_for("connect_google"))
 
     # Display calendar page
+    events = GoogleCalendar.getAllEventsInAllCalendars(creds)
+
     return render_template(
         "calendar.html",
-        user=user
+        user=user,
+        events=events
     )
 
 # ==========================================
