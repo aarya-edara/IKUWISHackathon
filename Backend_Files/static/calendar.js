@@ -137,6 +137,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+
     function refresh() {
         tasks = loadTasks();
         renderCalendar(currentDate);
