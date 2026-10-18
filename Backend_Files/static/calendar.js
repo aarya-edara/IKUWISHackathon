@@ -70,6 +70,32 @@ document.addEventListener('DOMContentLoaded', function () {
             if (key === selectedKey) dayDiv.classList.add('selected');
             if (tasks[key] && tasks[key].length) dayDiv.classList.add('has-tasks');
 
+            // Show Google events that overlap this day.
+            const dayStart = new Date(year, month, i);
+            const dayEnd = new Date(year, month, i + 1);
+
+            (window.googleEvents || []).forEach(function (event) {
+                if (event.status === 'cancelled' || !event.start || !event.end) return;
+
+                let overlaps;
+
+                if (event.start.date) {
+                    // All-day events: Google's end date is exclusive.
+                    overlaps = event.start.date <= key && key < event.end.date;
+                } else {
+                    const start = new Date(event.start.dateTime);
+                    const end = new Date(event.end.dateTime);
+                    overlaps = start < dayEnd && end > dayStart;
+                }
+
+                if (overlaps) {
+                    const eventDiv = document.createElement('div');
+                    eventDiv.classList.add('google-event');
+                    eventDiv.textContent = event.summary || '(No title)';
+                    dayDiv.appendChild(eventDiv);
+                }
+            });
+
             dayDiv.addEventListener('click', function () {
                 selectedKey = key;
                 renderCalendar(currentDate);
@@ -110,6 +136,7 @@ document.addEventListener('DOMContentLoaded', function () {
             taskList.appendChild(li);
         });
     }
+
 
     function refresh() {
         tasks = loadTasks();

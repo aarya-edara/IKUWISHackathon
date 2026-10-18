@@ -48,13 +48,6 @@
     </div>
 
 
-
-
-
-
-
-
-
         <div class="weekdays">
             <div>Monday</div>
             <div>Tuesday</div>
@@ -71,9 +64,11 @@
 
     </div>
 
+    <script>
+    window.googleEvents = {{ events | tojson }};
+    </script>
 
-
-    <script src="{{ url_for('static', filename='calendar.js') }}"></script>
+    <script src="{{ url_for('static', filename='calendar.js', v='3') }}"></script>
 </body>
 
 
