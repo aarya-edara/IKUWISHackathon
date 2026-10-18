@@ -117,7 +117,7 @@ def getDailyEventsInAllCalendars(creds):
     events = []
     Date = datetime.datetime.now(tz=datetime.timezone.utc)
     for ID in AllCalendarsIDs:
-        events.extend(getAllEventsInADay(creds,Date,ID))
+        events.extend(getAllEventsInADay(creds, Date, ID) or [])
 
     return events
 
@@ -126,7 +126,7 @@ def getAllEventsInAllCalendars(creds):
     events = []
 
     for ID in AllCalendarsIDs:
-        events.extend(getAllEventsInACalendar(creds,ID))
+        events.extend(getAllEventsInACalendar(creds, ID) or [])
 
     return events
 

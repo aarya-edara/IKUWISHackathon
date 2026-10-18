@@ -2,6 +2,8 @@
 <html lang="en">
 
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='calendarstyle.css') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -30,7 +32,13 @@
 </nav>
 
 
-    <h1>Task Manager</h1>
+        <h1>Task Manager</h1>
+
+        {% with messages = get_flashed_messages() %}
+            {% for message in messages %}
+                <p class="site-name">{{ message }}</p>
+            {% endfor %}
+        {% endwith %}
 
 
 
@@ -53,6 +61,26 @@
           </div>
 
         </fieldset>
+
+        <fieldset class="duration-picker">
+          <legend>Timeframe</legend>
+
+          <div class="input-group">
+            <input type="date" name="start_date" id="start_date" required>
+            <label for="start_date">from</label>
+          </div>
+
+          <div class="input-group">
+            <input type="date" name="end_date" id="end_date" required>
+            <label for="end_date">to</label>
+          </div>
+        </fieldset>
+
+        <div class="input-group">
+            <input type="checkbox" name="skip_weekends" id="skip_weekends" style="width: auto;">
+            <label for="skip_weekends">skip weekends</label>
+        </div>
+
         <select name="priority">
             <option value="high">High</option>
             <option value="medium">Medium</option>
@@ -60,15 +88,7 @@
         </select>
         <button type="submit">Add task</button>
 
-<!--    <input id="task-input" placeholder="Task name" required>
-    <label>From <input type="date" id="task-start" required></label>
-    <label>To <input type="date" id="task-end" required></label>
-    <label>Days needed <input type="number" id="task-days" value="1" min="1"></label>
-    <label><input type="checkbox" id="task-skip-weekends"> Skip weekends</label>
-    <button type="submit">Add</button>  -->
-
     </form>
-    <p id="task-result"></p>
 
     {% if table_has_tasks %}
         <a href="{{ url_for('taskmanager.make_schedule') }}" class="done-btn">Done</a>
@@ -78,94 +98,13 @@
 
     {{ table|safe }}
 
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const MAX_HOURS_PER_DAY = 4;
-    const TASKS_KEY = 'tasks';
-    const form = document.querySelector('form[method="POST"]');
-    if (!form) return;
+    {% if table_has_tasks %}
+    <form method="POST" action="{{ url_for('taskmanager.clear_tasks') }}" class="clear-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit">Clear all tasks</button>
+    </form>
+    {% endif %}
 
-    function dateKey(d) {
-        return d.getFullYear() + '-' +
-            String(d.getMonth() + 1).padStart(2, '0') + '-' +
-            String(d.getDate()).padStart(2, '0');
-    }
-
-    function parseDate(str) {
-        const parts = str.split('-').map(Number);
-        return new Date(parts[0], parts[1] - 1, parts[2]);
-    }
-
-    function loadTasks() {
-        try { return JSON.parse(localStorage.getItem(TASKS_KEY)) || {}; }
-        catch (e) { return {}; }
-    }
-
-    function hoursOn(list) {
-        return (list || []).reduce(function (sum, t) {
-            return sum + (typeof t === 'object' && t.hours ? t.hours : 0);
-        }, 0);
-    }
-
-    function scheduleByHours(name, totalHours, priority, startStr, endStr, skipWeekends) {
-        const tasks = loadTasks();
-        const start = parseDate(startStr);
-        const end = parseDate(endStr);
-        if (!name || totalHours <= 0 || isNaN(start) || isNaN(end) || start > end) return [];
-
-        const days = [];
-        for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-            const dow = d.getDay();
-            if (skipWeekends && (dow === 0 || dow === 6)) continue;
-            const key = dateKey(d);
-            days.push({ key: key, used: hoursOn(tasks[key]) });
-        }
-        if (days.length === 0) return [];
-
-        const order = days.filter(function (d) { return d.used === 0; })
-            .concat(days.filter(function (d) { return d.used > 0; })
-                .sort(function (a, b) { return a.used - b.used; }));
-
-        let remaining = totalHours;
-        const placed = [];
-        order.forEach(function (day) {
-            if (remaining <= 0) return;
-            const free = MAX_HOURS_PER_DAY - day.used;
-            if (free <= 0) return;
-            const h = Math.min(free, remaining);
-            placed.push({ key: day.key, hours: h });
-            remaining -= h;
-        });
-
-        if (remaining > 0) {
-            const target = days.slice().sort(function (a, b) { return a.used - b.used; })[0];
-            const existing = placed.find(function (p) { return p.key === target.key; });
-            if (existing) existing.hours += remaining;
-            else placed.push({ key: target.key, hours: remaining });
-        }
-
-        placed.forEach(function (p) {
-            if (!tasks[p.key]) tasks[p.key] = [];
-            tasks[p.key].push({ name: name, hours: Math.round(p.hours * 100) / 100, priority: priority });
-        });
-
-        try { localStorage.setItem(TASKS_KEY, JSON.stringify(tasks)); } catch (e) {}
-        return placed;
-    }
-
-    form.addEventListener('submit', function () {
-        const f = form.elements;
-        const name = f['task'].value.trim();
-        const hours = (parseFloat(f['hours'].value) || 0) + (parseFloat(f['minutes'].value) || 0) / 60;
-        const priority = f['priority'] ? f['priority'].value : 'medium';
-        const start = f['start_date'] ? f['start_date'].value : '';
-        const end = f['end_date'] ? f['end_date'].value : '';
-        const skipWeekends = !!(f['skip_weekends'] && f['skip_weekends'].checked);
-
-        scheduleByHours(name, hours, priority, start, end, skipWeekends);
-    });
-});
-</script>
 
 </body>
 </html>

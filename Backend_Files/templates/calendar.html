@@ -1,6 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Almanac | Calendar</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='calendarstyle.css') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -9,21 +12,31 @@
     <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&family=Press+Start+2P&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Handjet:wght,ELSH@100..900,2&family=Pixelify+Sans:wght@400..700&family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
 
-   <!--    <link rel="stylesheet" href="{{ url_for('static', filename='calendarstyle.css') }}"> -->
-
 </head>
 
 <body>
 
 <nav>
-    <a href="{{ url_for('/') }}" class="site-name">
+    <a href="{{ url_for('dashboard') }}" class="site-name">
         This month's calendar
     </a>
 
-    <a href="/tasks" class="site-name">
+    <a href="{{ url_for('taskmanager.tasks') }}" class="site-name">
         Task Manager
     </a>
+
+    {% if not google_connected %}
+    <a href="{{ url_for('connect_google') }}" class="site-name">
+        Connect Google Calendar
+    </a>
+    {% endif %}
 </nav>
+
+{% with messages = get_flashed_messages() %}
+    {% for message in messages %}
+        <p class="site-name">{{ message }}</p>
+    {% endfor %}
+{% endwith %}
 
 <img src="{{ url_for('static', filename='star.gif') }}" alt="" class="star star-1">
 <img src="{{ url_for('static', filename='star.gif') }}" alt="" class="star star-2">
@@ -65,10 +78,10 @@
     </div>
 
     <script>
-    window.googleEvents = {{ events | tojson }};
+    window.googleEvents = {{ (events or []) | tojson }};
     </script>
 
-    <script src="{{ url_for('static', filename='calendar.js', v='3') }}"></script>
+    <script src="{{ url_for('static', filename='calendar.js', v='4') }}"></script>
 </body>
 
 
