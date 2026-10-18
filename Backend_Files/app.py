@@ -23,6 +23,10 @@ from Backend_Files.Database_Functions.UserDatabaseFunctions import (
     check_login
 )
 
+from Backend_Files.Database_Functions.UserDatabaseFunctions import (
+    save_google_token as save_google_token_to_database
+)
+
 # Google calendar Imports
 from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
@@ -264,8 +268,8 @@ def authenticateUserCredentials(user_id):
         return None
 
 def save_google_token(user_id, creds):
-    # todo:
-    print("Save Token")
+    save_google_token_to_database(user_id, creds)
+
 
 @app.route("/connect-google")
 def connect_google():
