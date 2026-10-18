@@ -27,7 +27,7 @@
 <img src="{{ url_for('static', filename='star.gif') }}" alt="" class="star star-8">
 
 <nav>
-    <a href="{{ url_for('calendar') }}">Calendar</a>
+    <a href="{{ url_for('dashboard') }}">Calendar</a>
 </nav>
 
 
@@ -36,6 +36,9 @@
 
 
     <form method="POST">
+
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
         <input name="task" placeholder="Task/assignment title" required>
         <fieldset class="duration-picker">
           <legend>Time Required</legend>
