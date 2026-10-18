@@ -1,0 +1,169 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='calendarstyle.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Handjet:wght,ELSH@100..900,2&family=Pixelify+Sans:wght@400..700&family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+    <title>Task Manager</title>
+
+
+
+</head>
+
+<body>
+
+<img src="https://i.gifer.com/Mc28.gif" alt="Saturn" class="side-gif side-gif-left">
+<img src="https://i.gifer.com/Mc28.gif" alt="Saturn" class="side-gif side-gif-right">
+
+<img src="{{ url_for('static', filename='star.gif') }}" alt="" class="star star-5">
+<img src="{{ url_for('static', filename='star.gif') }}" alt="" class="star star-6">
+<img src="{{ url_for('static', filename='star.gif') }}" alt="" class="star star-7">
+<img src="{{ url_for('static', filename='star.gif') }}" alt="" class="star star-8">
+
+<nav>
+    <a href="{{ url_for('calendar') }}">Calendar</a>
+</nav>
+
+
+    <h1>Task Manager</h1>
+
+
+
+    <form method="POST">
+        <input name="task" placeholder="Task/assignment title" required>
+        <fieldset class="duration-picker">
+          <legend>Time Required</legend>
+
+          <div class="input-group">
+            <input type="number" name="hours" id="hours" min="0" placeholder="0" required>
+            <label for="hours">hours</label>
+          </div>
+
+         <div class="input-group">
+            <input type="number" name="minutes" id="minutes" min="0" max="59" placeholder="00" required>
+            <label for="minutes">mins</label>
+          </div>
+
+        </fieldset>
+        <select name="priority">
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+        </select>
+        <button type="submit">Add task</button>
+
+<!--    <input id="task-input" placeholder="Task name" required>
+    <label>From <input type="date" id="task-start" required></label>
+    <label>To <input type="date" id="task-end" required></label>
+    <label>Days needed <input type="number" id="task-days" value="1" min="1"></label>
+    <label><input type="checkbox" id="task-skip-weekends"> Skip weekends</label>
+    <button type="submit">Add</button>  -->
+
+    </form>
+    <p id="task-result"></p>
+
+    {% if table_has_tasks %}
+        <a href="{{ url_for('taskmanager.make_schedule') }}" class="done-btn">Done</a>
+    {% else %}
+        <span class="done-btn disabled">Done</span>
+    {% endif %}
+
+    {{ table|safe }}
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const MAX_HOURS_PER_DAY = 4;
+    const TASKS_KEY = 'tasks';
+    const form = document.querySelector('form[method="POST"]');
+    if (!form) return;
+
+    function dateKey(d) {
+        return d.getFullYear() + '-' +
+            String(d.getMonth() + 1).padStart(2, '0') + '-' +
+            String(d.getDate()).padStart(2, '0');
+    }
+
+    function parseDate(str) {
+        const parts = str.split('-').map(Number);
+        return new Date(parts[0], parts[1] - 1, parts[2]);
+    }
+
+    function loadTasks() {
+        try { return JSON.parse(localStorage.getItem(TASKS_KEY)) || {}; }
+        catch (e) { return {}; }
+    }
+
+    function hoursOn(list) {
+        return (list || []).reduce(function (sum, t) {
+            return sum + (typeof t === 'object' && t.hours ? t.hours : 0);
+        }, 0);
+    }
+
+    function scheduleByHours(name, totalHours, priority, startStr, endStr, skipWeekends) {
+        const tasks = loadTasks();
+        const start = parseDate(startStr);
+        const end = parseDate(endStr);
+        if (!name || totalHours <= 0 || isNaN(start) || isNaN(end) || start > end) return [];
+
+        const days = [];
+        for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+            const dow = d.getDay();
+            if (skipWeekends && (dow === 0 || dow === 6)) continue;
+            const key = dateKey(d);
+            days.push({ key: key, used: hoursOn(tasks[key]) });
+        }
+        if (days.length === 0) return [];
+
+        const order = days.filter(function (d) { return d.used === 0; })
+            .concat(days.filter(function (d) { return d.used > 0; })
+                .sort(function (a, b) { return a.used - b.used; }));
+
+        let remaining = totalHours;
+        const placed = [];
+        order.forEach(function (day) {
+            if (remaining <= 0) return;
+            const free = MAX_HOURS_PER_DAY - day.used;
+            if (free <= 0) return;
+            const h = Math.min(free, remaining);
+            placed.push({ key: day.key, hours: h });
+            remaining -= h;
+        });
+
+        if (remaining > 0) {
+            const target = days.slice().sort(function (a, b) { return a.used - b.used; })[0];
+            const existing = placed.find(function (p) { return p.key === target.key; });
+            if (existing) existing.hours += remaining;
+            else placed.push({ key: target.key, hours: remaining });
+        }
+
+        placed.forEach(function (p) {
+            if (!tasks[p.key]) tasks[p.key] = [];
+            tasks[p.key].push({ name: name, hours: Math.round(p.hours * 100) / 100, priority: priority });
+        });
+
+        try { localStorage.setItem(TASKS_KEY, JSON.stringify(tasks)); } catch (e) {}
+        return placed;
+    }
+
+    form.addEventListener('submit', function () {
+        const f = form.elements;
+        const name = f['task'].value.trim();
+        const hours = (parseFloat(f['hours'].value) || 0) + (parseFloat(f['minutes'].value) || 0) / 60;
+        const priority = f['priority'] ? f['priority'].value : 'medium';
+        const start = f['start_date'] ? f['start_date'].value : '';
+        const end = f['end_date'] ? f['end_date'].value : '';
+        const skipWeekends = !!(f['skip_weekends'] && f['skip_weekends'].checked);
+
+        scheduleByHours(name, hours, priority, start, end, skipWeekends);
+    });
+});
+</script>
+
+</body>
+</html>
