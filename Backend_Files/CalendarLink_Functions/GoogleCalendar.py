@@ -33,7 +33,6 @@ def authenticateUserCredentials():
         print("https://developers.google.com/workspace/calendar/api/quickstart/python")
 
 
-
 def getNext10Events():
 
     # Authenticate User Start ↓↓↓
@@ -92,16 +91,45 @@ def getAllEventsInADay(Date):
         events = events_result.get("items", [])
         return events
 
-        if not events:
-            print("No upcoming events found.")
-            return
+    except HttpError as error:
+        print(f"An error occurred: {error}")
+    except:
+       print("Another error occurred")
 
+def getAllEventsInCalendar(CalendarID):
+    # Authenticate User Start ↓↓↓
+    creds = authenticateUserCredentials()
+    # Authenticate User End ↑↑↑
 
+    try:
+        service = build("calendar", "v3", credentials=creds)
+
+        # Call the Calendar API
+        ## NOTE : HARDCODED DATES
+        StartDate = datetime.datetime.now(tz=datetime.timezone.utc)
+        EndDate = (StartDate + datetime.timedelta(days=180)).replace(hour=0, minute=0, second=0, microsecond=0)
+        print("Getting all events within a 6 month period [6 months for demo purposes]")
+        events_result = (
+            service.events()
+            .list(
+                calendarId=CalendarID,
+                timeMin=StartDate.isoformat(),
+                timeMax =EndDate.isoformat(),
+                singleEvents=True,
+                orderBy="startTime",
+            )
+            .execute()
+        )
+        events = events_result.get("items", [])
+        return events
 
     except HttpError as error:
         print(f"An error occurred: {error}")
     # except:
     #     print("Another error occurred")
+
+
+
 
 def printAllEventsInTerminal(Events):
     try :
@@ -111,8 +139,10 @@ def printAllEventsInTerminal(Events):
     except TypeError:
         print("No upcoming events found.")
 
+
 def main():
-    events = getNext10Events()
+    # events = getNext10Events()
+    events = getAllEventsInCalendar('vjnbcrcpdoc16ao7bghfaun2j1sv11b9@import.calendar.google.com')
     # Today = datetime.datetime.now(tz=datetime.timezone.utc)
     # events = getAllEventsInADay(Today)
     printAllEventsInTerminal(events)
