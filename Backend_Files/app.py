@@ -283,6 +283,7 @@ def connect_google():
         prompt="consent"
     )
 
+    session["google_code_verifier"] = flow.code_verifier
     session["google_state"] = state
     session["google_connect_user"] = session["user_id"]
 
@@ -311,6 +312,11 @@ def google_callback():
         scopes=SCOPES,
         redirect_uri=GOOGLE_CALLBACK
     )
+
+    flow.code_verifier = session.pop("google_code_verifier", None)
+
+    if not flow.code_verifier:
+        return "Sign-in session expired. Please connect Google again.", 400
 
     flow.fetch_token(code=request.args["code"])
     creds = flow.credentials
