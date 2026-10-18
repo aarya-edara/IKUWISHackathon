@@ -99,6 +99,8 @@ app = Flask(
     static_folder=str(STATIC_DIR)
 )
 
+print("FLASK STATIC FOLDER:", app.static_folder)
+
 # Allow Flask to find HTML files
 # in both template folders
 
@@ -134,7 +136,9 @@ app.register_blueprint(taskmanager_bp)
 
 @app.route("/")
 def launchPage():
-    return render_template("Launch_Page.html")
+    response = app.make_response(render_template("Launch_Page.html"))
+    response.headers["Cache-Control"] = "no-store"
+    return response
 
 @app.route("/tasks")
 def TaskPage():
@@ -228,9 +232,12 @@ def dashboard():
             return redirect(url_for("connect_google"))
 
     # Display calendar page
+    events = GoogleCalendar.getAllEventsInAllCalendars(creds)
+
     return render_template(
         "calendar.html",
-        user=user
+        user=user,
+        events=events
     )
 
 # ==========================================
@@ -346,3 +353,4 @@ if __name__ == "__main__":
         port=5000,
         debug=False
     )
+

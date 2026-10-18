@@ -8,7 +8,7 @@
 body {
     font-family: Arial, sans-serif;
     display: grid;
-    place-items: center;
+    place-items: start center;
     height: 100vh;
     margin: 0;
     background-color: #333333;
@@ -57,14 +57,6 @@ body {
 
 
 
-
-
-
-
-
-
-
-
 .days {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
@@ -91,7 +83,7 @@ gap: 10px
     transition: background-color 0.3s;
 }
 .days div:hover {
-    background-color: #bdf6fe
+    background-color: #bdf6fe;
     color: white;
 
 }
@@ -528,4 +520,131 @@ nav {
 
 @media (max-width: 900px) {
     .star { display: none; }
+}
+
+
+
+/* Keep calendar columns from expanding */
+.days,
+#days {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    grid-auto-rows: 120px;
+    min-width: 0;
+}
+
+/* Prevent event content from widening day boxes */
+.days > div {
+    min-width: 0;
+    overflow: hidden;
+}
+
+/* Google Calendar event styling */
+.days > div > .google-event {
+    display: block;
+    position: static;
+    flex: none;
+
+    width: 90%;
+    min-width: 0;
+    box-sizing: border-box;
+
+    padding: 2px 4px;
+    margin: 0;
+
+    font-family: 'VT323', monospace;
+    font-size: 14px;
+    line-height: 18px;
+    text-align: left;
+
+    color: #030645;
+    background-color: #bdf6fe;
+
+    border: none;
+    border-radius: 3px;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+
+/* ===== CALENDAR LAYOUT CORRECTION ===== */
+
+.calendar {
+    height: 100vh;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.days,
+#days {
+    flex: 1;
+    min-height: 0;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    grid-template-rows: repeat(6, minmax(0, 1fr));
+    grid-auto-rows: minmax(0, 1fr);
+}
+
+.days > div {
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+}
+
+
+/* ===== CALENDAR GRID FIX ===== */
+
+.calendar {
+    min-height: 100vh;
+    height: auto;
+    overflow: visible;
+}
+
+.days,
+#days {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    grid-auto-rows: 110px;
+    gap: 0;
+    flex: none;
+}
+
+.days > div {
+    min-width: 0;
+    height: 110px;
+    box-sizing: border-box;
+    overflow: hidden;
+    border-right: 1px solid #f0b70c;
+    border-bottom: 1px solid #f0b70c;
+}
+
+
+/* ===== FIXED-HEIGHT CALENDAR GRID ===== */
+
+.calendar {
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+}
+
+.days,
+#days {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    grid-template-rows: none;
+    grid-auto-rows: 110px;
+    gap: 0;
+    flex: none;
+    min-width: 0;
+}
+
+.days > div {
+    min-width: 0;
+    height: 110px;
+    min-height: 0;
+    box-sizing: border-box;
+    overflow: hidden;
+
+    border-right: 1px solid #f0b70c;
+    border-bottom: 1px solid #f0b70c;
 }
