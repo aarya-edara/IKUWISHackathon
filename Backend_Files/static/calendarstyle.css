@@ -523,6 +523,238 @@ nav {
 }
 
 
+/* ==========================================
+   LAUNCH PAGE
+   ========================================== */
+
+body.launch-page {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    min-height: 100vh;
+    place-items: normal;
+    background-color: #030645;
+    font-family: 'VT323', monospace;
+    color: #FFFFFF;
+}
+
+/* NAVBAR */
+
+.launch-page nav {
+    justify-content: space-between;
+    align-items: center;
+}
+
+.launch-page .logo,
+.launch-page .nav-label {
+    font-family: 'VT323', monospace;
+    font-size: 18px;
+    color: #FFFFFF;
+    font-weight: normal;
+    letter-spacing: normal;
+}
+
+/* MAIN CONTENT */
+
+.launch-page main {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 30px 20px 60px;
+    position: relative;
+    z-index: 1;
+}
+
+.launch-page .container {
+    width: 100%;
+    max-width: 440px;
+}
+
+.launch-page .heading {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.launch-page .heading h1 {
+    margin: 0 0 10px;
+}
+
+.launch-page .heading p {
+    font-family: 'VT323', monospace;
+    font-size: 22px;
+    color: #FFFFFF;
+}
+
+/* AUTH CARD */
+
+.launch-page .card {
+    background-color: #030645;
+    border: 1px solid #f0b70c;
+    box-shadow: 6px 6px 0 #ffd1df;
+    padding: 28px;
+}
+
+.launch-page .card form {
+    border: none;
+    box-shadow: none;
+    background: transparent;
+    padding: 0;
+    width: 100%;
+    max-width: none;
+    gap: 0;
+}
+
+.launch-page .hidden {
+    display: none !important;
+}
+
+/* TABS */
+
+.launch-page .tabs {
+    display: flex;
+    border: 1px solid #f0b70c;
+    margin-bottom: 24px;
+}
+
+.launch-page .tab {
+    flex: 1;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 11px;
+    padding: 13px 8px;
+    border: none;
+    background: transparent;
+    color: #FFFFFF;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.launch-page .tab + .tab {
+    border-left: 1px solid #f0b70c;
+}
+
+.launch-page .tab.active {
+    background-color: #ffd1df;
+    color: #030645;
+}
+
+.launch-page .tab:hover:not(.active) {
+    color: #bdf6fe;
+}
+
+/* FORMS */
+
+.launch-page .form-group {
+    margin-bottom: 18px;
+}
+
+.launch-page label {
+    display: block;
+    margin-bottom: 6px;
+    font-family: 'Pixelify Sans', cursive;
+    font-weight: bold;
+    font-size: 16px;
+    color: #FFFFFF;
+}
+
+.launch-page form input::placeholder {
+    color: #555;
+}
+
+/* BUTTON */
+
+.launch-page .submit-btn {
+    width: 100%;
+    margin-top: 6px;
+}
+
+/* FORM SWITCH */
+
+.launch-page .switch-text {
+    text-align: center;
+    margin-top: 20px;
+    font-family: 'VT323', monospace;
+    font-size: 20px;
+    color: #FFFFFF;
+}
+
+.launch-page .switch-text a {
+    color: #f0b70c;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.launch-page .switch-text a:hover {
+    color: #bdf6fe;
+}
+
+/* ERROR MESSAGES */
+
+.launch-page .message {
+    background-color: rgba(255, 209, 223, 0.12);
+    border: 1px solid #ffd1df;
+    color: #ffd1df;
+    font-family: 'VT323', monospace;
+    font-size: 20px;
+    padding: 10px 12px;
+    margin-bottom: 18px;
+}
+
+/* CALENDAR BUTTON (same as Done) */
+
+.launch-page .login-bypass-btn {
+    display: block;
+    text-align: center;
+    margin-top: 22px;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 14px;
+    background-color: #f0b70c;
+    color: #030645;
+    text-decoration: none;
+    padding: 12px 30px;
+    cursor: pointer;
+    box-shadow: 4px 4px 0 #ffd1df;
+    transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.launch-page .login-bypass-btn:hover {
+    background-color: #bdf6fe;
+}
+
+.launch-page .login-bypass-btn:active {
+    transform: translate(4px, 4px);
+    box-shadow: none;
+}
+
+/* FOOTER */
+
+.launch-page footer {
+    text-align: center;
+    padding: 20px;
+    border-top: 1px solid #f0b70c;
+    font-family: 'VT323', monospace;
+    font-size: 18px;
+    color: #FFFFFF;
+}
+
+/* MOBILE SUPPORT */
+
+@media (max-width: 480px) {
+    .launch-page nav {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .launch-page .card {
+        padding: 22px 18px;
+    }
+
+    .launch-page .tab {
+        font-size: 9px;
+    }
+}
+
+
 
 /* Keep calendar columns from expanding */
 .days,

@@ -8,249 +8,26 @@
 
     <title>Almanac | Smart Scheduler and Organiser</title>
 
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background: linear-gradient(135deg, #080d1c, #172345);
-            color: white;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* NAVBAR */
-
-        nav {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 25px 8%;
-        }
-
-        .logo {
-            font-size: 25px;
-            font-weight: 800;
-            letter-spacing: 1px;
-        }
-
-        .logo span {
-            color: #8b82ff;
-        }
-
-        .nav-label {
-            color: #8d9ab7;
-            font-size: 12px;
-            letter-spacing: 2px;
-        }
-
-        /* MAIN CONTENT */
-
-        main {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 30px 20px 60px;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 440px;
-        }
-
-        .heading {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .heading h1 {
-            font-size: 34px;
-            margin-bottom: 10px;
-            letter-spacing: -1px;
-        }
-
-        .heading p {
-            color: #9ba8c4;
-            font-size: 15px;
-        }
-
-        /* AUTH CARD */
-
-        .card {
-            background: rgba(27, 36, 62, 0.95);
-            padding: 32px;
-            border-radius: 20px;
-            border: 1px solid rgba(255,255,255,0.08);
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-        }
-
-        /* TABS */
-
-        .tabs {
-            display: flex;
-            background: #10182d;
-            padding: 5px;
-            border-radius: 12px;
-            margin-bottom: 28px;
-        }
-
-        .tab {
-            flex: 1;
-            border: none;
-            padding: 13px;
-            border-radius: 9px;
-            background: transparent;
-            color: #96a3bf;
-            font-weight: 600;
-            font-size: 14px;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        .tab.active {
-            background: #665cf5;
-            color: white;
-            box-shadow: 0 4px 15px rgba(102,92,245,0.3);
-        }
-
-        .tab:hover:not(.active) {
-            color: white;
-        }
-
-        /* FORMS */
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-size: 13px;
-            color: #cbd5eb;
-            font-weight: 500;
-        }
-
-        input {
-            width: 100%;
-            padding: 14px 16px;
-            background: #10182d;
-            border: 1px solid #303c57;
-            border-radius: 10px;
-            color: white;
-            font-size: 14px;
-            outline: none;
-            transition: 0.3s;
-        }
-
-        input::placeholder {
-            color: #64728f;
-        }
-
-        input:focus {
-            border-color: #8178ff;
-            box-shadow: 0 0 0 3px rgba(129,120,255,0.15);
-        }
-
-        /* BUTTON */
-
-        .submit-btn {
-            width: 100%;
-            padding: 15px;
-            margin-top: 8px;
-            border: none;
-            border-radius: 11px;
-            background: linear-gradient(135deg, #665cf5, #8b68ff);
-            color: white;
-            font-size: 15px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        .submit-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(102,92,245,0.4);
-        }
-
-        /* FORM SWITCH */
-
-        .hidden {
-            display: none;
-        }
-
-        .switch-text {
-            text-align: center;
-            margin-top: 24px;
-            color: #9ba8c4;
-            font-size: 13px;
-        }
-
-        .switch-text a {
-            color: #a59eff;
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-        .switch-text a:hover {
-            text-decoration: underline;
-        }
-
-        /* ERROR MESSAGES */
-
-        .message {
-            background: rgba(255, 90, 110, 0.12);
-            border: 1px solid #ff657c;
-            color: #ffc0cb;
-            padding: 12px;
-            border-radius: 10px;
-            margin-bottom: 18px;
-            font-size: 13px;
-        }
-
-        /* FOOTER */
-
-        footer {
-            text-align: center;
-            padding: 25px;
-            color: #65728e;
-            font-size: 12px;
-        }
-
-        /* MOBILE SUPPORT */
-
-        @media (max-width: 480px) {
-            nav {
-                padding: 22px;
-            }
-
-            .heading h1 {
-                font-size: 28px;
-            }
-
-            .card {
-                padding: 24px 20px;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='calendarstyle.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Handjet:wght,ELSH@100..900,2&family=Pixelify+Sans:wght@400..700&family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
 </head>
 
-<body>
+<body class="launch-page">
 
     <nav>
         <div class="logo">A<span>lmanac</span></div>
         <div class="nav-label">
-            proudly women made and founded
+            proudly women-made and founded
         </div>
     </nav>
 
     <main>
+
         <div class="container">
 
             <div class="heading">

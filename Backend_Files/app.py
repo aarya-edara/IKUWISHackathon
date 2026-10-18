@@ -67,8 +67,7 @@ print("Project folder:", BASE_DIR)
 
 print("Backend templates:", TEMPLATE_DIR)
 print("Frontend templates:", FRONTEND_TEMPLATE_DIR)
-from flask import Flask, render_template
-from Backend_Files.taskmanager import taskmanager_bp
+
 
 
 print(
@@ -130,9 +129,7 @@ CSRFProtect(app)
 from Backend_Files.taskmanager import taskmanager_bp
 app.register_blueprint(taskmanager_bp)
 
-# ==========================================
 # HOME PAGE
-# ==========================================
 
 @app.route("/")
 def launchPage():
@@ -140,9 +137,6 @@ def launchPage():
     response.headers["Cache-Control"] = "no-store"
     return response
 
-@app.route("/tasks")
-def TaskPage():
-    return render_template("taskmanager.html")
 
 # REGISTER NEW USER
 
